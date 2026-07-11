@@ -1,0 +1,2946 @@
+<!DOCTYPE html>
+<html lang="en" translate="no">
+<head>
+<meta charset="UTF-8">
+<meta name="google" content="notranslate">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Subinnova — Video Subtitle Translation Learning | Turn Any Video Into Your Own Study Material</title>
+<meta name="description" content="Turn any video into your own personalized subtitle learning material. Free AI translation, scene capture, auto-generated PDF/HTML study guides, TTS playback, and quizzes. Learn Korean, English, Japanese and more from movies, K-Dramas, and YouTube.">
+<meta name="keywords" content="subtitle learning, AI subtitle, video translation, language learning, learn Korean, learn English, learn Japanese, K-Drama learning, movie learning, subtitle player, subtitle capture, SRT player, AI translation, TTS, subinnova">
+<meta name="theme-color" content="#5b7fff">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Subinnova">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Subinnova — Video Subtitle Translation Learning">
+<meta property="og:description" content="Turn any video into your own personalized subtitle learning material — free AI translation, scene capture, PDF/HTML study guides, TTS, and quizzes.">
+<meta property="og:site_name" content="Subinnova">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Subinnova — Video Subtitle Translation Learning">
+<meta name="twitter:description" content="Turn any video into your own personalized subtitle learning material — free AI translation, scene capture, PDF/HTML study guides, TTS, and quizzes.">
+<style>
+  :root{
+    --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a; --border:#2e3250;
+    --primary:#5b7fff; --primary-dim:#3a4fcc; --text:#e8eaf6; --text-dim:#8890b0;
+    --green:#4caf82; --mark:#f5c842;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+  header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+  header h1{font-size:1em;color:var(--primary);}
+  .file-inputs{display:flex;gap:8px;margin-left:auto;align-items:center;font-size:0.8em;}
+  .file-inputs label{background:var(--surface2);border:1px solid var(--border);padding:5px 10px;border-radius:6px;cursor:pointer;}
+  .file-inputs input[type=file]{display:none;}
+  .main{display:grid;grid-template-columns:3fr 2fr;flex:1;overflow:hidden;}
+  .left-panel{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;}
+  .video-wrap{background:#000;flex-shrink:0;position:relative;}
+  #videoPlayer{width:100%;max-height:60vh;display:block;position:relative;z-index:1;}
+  #subtitleOverlay{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);text-align:center;pointer-events:none;max-width:92%;z-index:2;}
+  #subtitleOverlay .line{display:inline-block;background:rgba(0,0,0,0.75);color:#fff;font-size:1.2em;padding:6px 14px;border-radius:4px;margin:4px 0;line-height:1.4;}
+  #subtitleOverlay .line.en{color:#93c5fd;font-size:1em;}
+  .video-wrap:fullscreen{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;background:#000;}
+  .video-wrap:fullscreen #videoPlayer{max-height:100vh;width:auto;height:100%;}
+  .video-wrap:-webkit-full-screen{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;background:#000;}
+  .video-wrap:-webkit-full-screen #videoPlayer{max-height:100vh;width:auto;height:100%;}
+  #overlayToolbar{position:absolute;top:8px;right:8px;display:flex;gap:6px;z-index:4;}
+  .ov-btn{background:rgba(0,0,0,0.6);color:var(--text-dim);border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:0.78em;cursor:pointer;}
+  .ov-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+  .ov-btn:hover{opacity:0.85;}
+  /* 네이티브 전체화면 버튼은 숨기고 우리 커스텀 버튼(⛶)만 사용 — wrapper 전체화면이 자막을 유지하기 때문 */
+  video::-webkit-media-controls-fullscreen-button{display:none !important;}
+  .opts{display:flex;gap:14px;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--border);font-size:0.82em;align-items:center;}
+  .opts label{display:flex;gap:5px;align-items:center;cursor:pointer;}
+  .captured-list{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;}
+  .cap-card{display:flex;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;align-items:center;}
+  .cap-card img{width:96px;height:54px;object-fit:cover;border-radius:5px;background:#111;}
+  .cap-card .meta{flex:1;font-size:0.78em;color:var(--text-dim);}
+  .cap-card .meta .ko{color:var(--text);font-weight:600;}
+  .cap-card a{font-size:0.78em;color:var(--primary);text-decoration:none;white-space:nowrap;}
+  .right-panel{display:flex;flex-direction:column;overflow:hidden;}
+  .search-bar{padding:10px 12px;background:var(--surface);border-bottom:1px solid var(--border);}
+  .search-bar input{width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9em;}
+  .search-bar input:focus{outline:none;border-color:var(--primary);}
+  .result-count{font-size:0.78em;color:var(--text-dim);padding:6px 12px;}
+  .subtitle-list{flex:1;overflow-y:auto;padding:8px;}
+  .sub-item{padding:8px 10px;border-radius:8px;margin-bottom:6px;background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:border-color .15s;}
+  .sub-item:hover{border-color:var(--primary);}
+  .sub-item.active{border-color:var(--primary);background:var(--surface2);}
+  .sub-time{font-size:0.72em;color:var(--text-dim);font-family:monospace;margin-bottom:3px;}
+  .sub-text mark{background:var(--mark);color:#111;border-radius:2px;padding:0 1px;}
+  .editable-text{cursor:text;border-radius:5px;padding:3px 6px;margin:2px -6px;transition:background .12s;}
+  .editable-text:hover{background:rgba(255,255,255,0.04);}
+  .editable-text:focus{outline:1px dashed var(--primary);background:rgba(91,127,255,0.10);}
+  .en-line:empty::before{content:'(번역 없음 — 클릭해서 직접 입력하거나 🌐 번역 버튼 사용)';opacity:0.45;font-style:italic;}
+  body.lang-en .en-line:empty::before{content:'(No translation — click to type, or use the 🌐 Translate button)';}
+  .save-flash{color:var(--green);font-size:0.7em;margin-left:6px;opacity:0;transition:opacity .3s;}
+  .save-flash.show{opacity:1;}
+  .sub-actions{margin-top:6px;display:flex;gap:4px;}
+  .icon-btn{
+    padding:3px 6px !important; min-width:24px; font-size:0.85em !important; text-align:center;
+    background:transparent !important; border:1px solid var(--border) !important; color:var(--text-dim) !important;
+    box-shadow:none !important; font-weight:400 !important;
+  }
+  .icon-btn::before{ display:none !important; }
+  .icon-btn:hover{ background:rgba(255,255,255,0.08) !important; filter:none !important; color:var(--text) !important; }
+  .icon-btn:active{ transform:translateY(1px); box-shadow:none !important; filter:none !important; }
+  .btn{
+    position:relative; padding:6px 12px; border:none; border-radius:7px;
+    font-size:0.78em; font-weight:700; cursor:pointer; background:var(--primary); color:#fff;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.38), 0 5px 10px rgba(0,0,0,0.28);
+    transform: translateY(0); transition: transform .08s ease, box-shadow .08s ease, filter .1s ease;
+    overflow:hidden;
+  }
+  .btn::before{
+    content:''; position:absolute; inset:0; border-radius:inherit;
+    background:linear-gradient(rgba(255,255,255,0.28), rgba(255,255,255,0) 50%, rgba(0,0,0,0.10));
+    pointer-events:none;
+  }
+  .btn:hover{ filter:brightness(1.1); }
+  .btn:active{
+    transform: translateY(3px);
+    box-shadow: 0 0 0 rgba(0,0,0,0.38), 0 1px 3px rgba(0,0,0,0.2);
+    filter:brightness(0.95);
+  }
+  .btn:disabled{ opacity:0.5; cursor:not-allowed; box-shadow:none; transform:none; filter:none; }
+  .btn.export{background:var(--green);}
+  .status{font-size:0.78em;color:var(--text-dim);padding:8px 12px;}
+  .bottom-bar{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;}
+
+  /* ── 단어퀴즈 ── */
+  .quiz-modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;}
+  .quiz-modal-backdrop.show{display:flex;}
+  .quiz-modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:980px;max-width:94vw;max-height:88vh;overflow-y:auto;padding:20px;}
+  .quiz-layout{display:grid;grid-template-columns:1fr 220px;gap:18px;align-items:start;}
+  .quiz-picker{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;max-height:640px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
+  .quiz-picker-title{font-size:0.78em;color:var(--text-dim);padding:4px 2px;}
+  .quiz-pick-item{border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;background:var(--surface2);transition:border-color .15s;}
+  .quiz-pick-item:hover{border-color:var(--primary);}
+  .quiz-pick-item.active{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary) inset;}
+  .quiz-pick-item img{width:100%;height:100px;object-fit:cover;display:block;}
+  .quiz-pick-item .cap{font-size:0.7em;color:var(--text-dim);padding:4px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .quiz-modal h2{color:var(--primary);font-size:1.05em;margin-bottom:14px;}
+  .quiz-controls{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;font-size:0.85em;color:var(--text-dim);}
+  .quiz-controls label{display:flex;gap:4px;align-items:center;cursor:pointer;}
+  .quiz-controls input[type=number]{width:50px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;}
+  .quiz-img{width:100%;max-height:220px;object-fit:cover;border-radius:8px;background:#111;margin-bottom:12px;display:block;}
+  .quiz-img-wrap{position:relative;margin-bottom:12px;}
+  .quiz-img-wrap .quiz-img{margin-bottom:0;}
+  .quiz-hint-overlay{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent, rgba(0,0,0,0.85));padding:24px 14px 10px;border-radius:0 0 8px 8px;}
+  .quiz-hint-overlay .badge{display:inline-block;background:var(--primary);color:#fff;font-size:0.72em;font-weight:700;padding:2px 8px;border-radius:4px;margin-bottom:4px;}
+  .quiz-hint-overlay .hint-text{color:#fff;font-size:0.9em;}
+  .quiz-hint-overlay .hint-text .label{color:#ffd76b;font-weight:700;margin-right:4px;}
+  .quiz-answer-row{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;background:var(--bg);border:1px dashed var(--border);border-radius:8px;margin-bottom:18px;}
+  .quiz-answer-row.stacked{flex-direction:column;gap:8px;}
+  .quiz-slot-row{display:flex;flex-wrap:wrap;gap:8px;}
+  .quiz-slot{min-width:48px;height:40px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;padding:0 10px;font-size:0.95em;cursor:pointer;color:var(--text);}
+  .quiz-slot.empty{opacity:0.3;}
+  .quiz-slot.hint-slot{background:var(--primary-dim);color:#fff;cursor:default;border-color:var(--primary);}
+  .quiz-bank{display:flex;flex-wrap:wrap;gap:14px;padding:16px;justify-content:center;}
+  .quiz-chip{background:var(--mark);color:#111;padding:8px 14px;border-radius:8px;font-weight:600;cursor:pointer;box-shadow:0 3px 6px rgba(0,0,0,0.3);user-select:none;transition:transform .1s;}
+  .quiz-chip:hover{transform:scale(1.08) !important;}
+  .quiz-chip.wrong-shake{animation:quizShake .4s ease;background:#ff6b6b !important;color:#fff !important;}
+  @keyframes quizShake{
+    0%{transform:translateX(0) rotate(var(--r,0deg));}
+    20%{transform:translateX(-10px) rotate(-8deg);}
+    40%{transform:translateX(10px) rotate(8deg);}
+    60%{transform:translateX(-8px) rotate(-6deg);}
+    80%{transform:translateX(8px) rotate(6deg);}
+    100%{transform:translateX(0) rotate(var(--r,0deg));}
+  }
+  .quiz-slot.correct-pop{animation:quizPop .25s ease;}
+  @keyframes quizPop{
+    0%{transform:scale(0.7);}
+    60%{transform:scale(1.15);}
+    100%{transform:scale(1);}
+  }
+  .quiz-feedback{text-align:center;font-weight:700;margin:10px 0;min-height:1.4em;}
+  .quiz-feedback.correct{color:var(--green);}
+  .quiz-feedback.wrong{color:var(--accent, #ff6b6b);}
+  .quiz-actions{display:flex;gap:8px;justify-content:center;margin-top:10px;}
+  .history-day{width:13px;height:13px;border-radius:2px;background:var(--surface2);}
+  .history-day[data-level="1"]{background:#2d5c3f;}
+  .history-day[data-level="2"]{background:#3f9e5f;}
+  .history-day[data-level="3"]{background:var(--green);}
+  .history-month{margin-bottom:22px;}
+  .history-month-title{font-size:0.88em;color:var(--text);font-weight:700;margin-bottom:8px;}
+  .history-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:5px;}
+  .history-weekdays span{text-align:center;font-size:0.68em;color:var(--text-dim);}
+  .history-days-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .history-day-cell{aspect-ratio:1;border-radius:5px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.7em;color:var(--text-dim);cursor:default;}
+  .history-day-cell.has-activity{cursor:pointer;}
+  .history-day-cell.has-activity:hover{outline:1px solid var(--primary);}
+  .history-day-cell .day-count{font-size:0.72em;font-weight:700;opacity:0.9;}
+  .history-day-cell.blank{background:transparent;}
+  .history-day-cell.today{box-shadow:0 0 0 1px var(--primary) inset;}
+  .history-day-cell[data-level="1"]{background:#2d5c3f;color:#fff;}
+  .history-day-cell[data-level="2"]{background:#3f9e5f;color:#fff;}
+  .history-day-cell[data-level="3"]{background:var(--green);color:#111;font-weight:700;}
+</style>
+</head>
+<body>
+
+<!-- 외부(Firebase) 자막추출 신청 서비스 링크 — 맨 상단 고정 -->
+<div style="display:flex; gap:14px; padding:8px 16px; background:var(--primary-dim); border-bottom:1px solid var(--border); font-size:0.8em; color:#fff;">
+  <span style="color:#fff;" data-i18n="topbar_label">영상만 있고 자막이 없다면:</span>
+  <a id="linkHardsubExtract" href="#" target="_blank" class="btn" style="background:#fff; color:var(--primary-dim); text-decoration:none;" data-i18n="link_hardsub">🎞 하드섭(영상에 박힌 자막) 추출 신청</a>
+  <a id="linkAsrExtract" href="#" target="_blank" class="btn" style="background:#fff; color:var(--primary-dim); text-decoration:none;" data-i18n="link_asr">🎙 무자막 영상 음성인식 추출 신청</a>
+</div>
+
+<header>
+  <h1 data-i18n="app_title">🔍 자막검색 + 캡처 프로토타입</h1>
+  <div class="file-inputs">
+    <span id="folderStatus" style="color:var(--text-dim); margin-right:4px;"></span>
+    <button class="btn" id="btnPickFolder" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);" data-i18n="btn_open_folder">📁 폴더 열기</button>
+    <input type="file" id="folderInputFallback" webkitdirectory multiple style="display:none">
+    <button class="btn" id="btnHistory" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);" data-i18n="btn_history">📅 학습이력</button>
+    <button class="btn" id="btnShareApp" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);" data-i18n="btn_share">🔗 공유하기</button>
+    <button class="btn" id="btnLangToggle" style="background:var(--mark);color:#111;font-weight:700;">🌐 EN</button>
+  </div>
+</header>
+
+<div id="folderScanInfo" style="display:none; position:fixed; top:60px; right:16px; max-width:420px; padding:12px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; font-size:0.82em; line-height:1.7; box-shadow:0 8px 24px rgba(0,0,0,0.4); z-index:50;"></div>
+
+<!-- 번역 SRT가 없을 때만 노출되는 번역 도구 바 -->
+<div id="translateBar" style="display:none; align-items:center; gap:10px; flex-wrap:wrap; padding:8px 16px; background:var(--surface2); border-bottom:1px solid var(--border); font-size:0.85em;">
+  <span style="color:var(--text-dim);" data-i18n="translate_bar_label">🌐 전체번역 설정 —</span>
+  <select id="targetLangSelect" style="background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:4px 8px;">
+    <option value="ko">한국어</option>
+    <option value="en">English</option>
+    <option value="ja">日本語</option>
+    <option value="zh-CN">中文(简体)</option>
+    <option value="zh-TW">中文(繁體)</option>
+    <option value="de">Deutsch</option>
+    <option value="es">Español</option>
+    <option value="fr">Français</option>
+    <option value="it">Italiano</option>
+    <option value="pt">Português</option>
+    <option value="nl">Nederlands</option>
+    <option value="pl">Polski</option>
+    <option value="tr">Türkçe</option>
+    <option value="vi">Tiếng Việt</option>
+    <option value="th">ภาษาไทย</option>
+    <option value="id">Bahasa Indonesia</option>
+    <option value="hi">हिन्दी</option>
+    <option value="ar">العربية</option>
+    <option value="ru">Русский</option>
+  </select>
+  <button class="btn" id="btnGoogleTranslate" style="background:var(--primary); color:#fff;" data-i18n="btn_translate_all">🌐 구글 무료번역 실행</button>
+  <span id="translateStatus" style="color:var(--text-dim);"></span>
+  <button class="btn" id="btnDownloadTranslatedSrt" style="display:none; background:var(--green); color:#fff;" data-i18n="btn_download_srt">⬇ 번역 SRT 다운로드</button>
+  <a id="linkPreciseTranslate" href="#" target="_blank" class="btn" style="margin-left:auto; background:var(--mark); color:#111; text-decoration:none;" data-i18n="link_precise">✨ 정밀번역 요청 →</a>
+</div>
+<div style="padding:4px 16px; background:var(--surface2); border-bottom:1px solid var(--border); font-size:0.7em; color:var(--text-dim);" data-i18n="mt_disclaimer">
+  ⚠️ 무료 기계번역은 참고용입니다 — 정확한 번역이 필요하면 위의 "정밀번역 요청"을 이용하세요.
+</div>
+
+<div class="main">
+  <div class="left-panel">
+    <div class="video-wrap">
+      <video id="videoPlayer" controls></video>
+      <div id="subtitleOverlay"></div>
+      <div id="overlayToolbar">
+        <button type="button" id="btnCustomFullscreen" class="ov-btn" data-i18n-title="ov_fullscreen_title" title="전체화면(자막 유지)">⛶</button>
+      </div>
+    </div>
+    <div class="opts">
+      <label><input type="checkbox" id="optKo" checked> <span data-i18n="opt_ko">한글 표시(캡처)</span></label>
+      <label><input type="checkbox" id="optEn"> <span data-i18n="opt_en">영문 표시(캡처)</span></label>
+      <span id="demoLicenseBadge" style="display:none; font-size:0.75em; color:var(--text-dim); margin-left:8px;"></span>
+      <span style="display:flex;gap:6px;margin-left:8px;">
+        <button type="button" id="btnToggleSrc" class="ov-btn active" data-i18n-title="ov_src_title" data-i18n="ov_src" title="원문 자막 표시/숨김">원문</button>
+        <button type="button" id="btnToggleTgt" class="ov-btn active" data-i18n-title="ov_tgt_title" data-i18n="ov_tgt" title="번역 자막 표시/숨김">번역</button>
+        <button type="button" id="btnToggleBoth" class="ov-btn" data-i18n-title="ov_both_title" data-i18n="ov_both" title="둘 다 켜기/끄기">모두</button>
+      </span>
+      <span style="margin-left:auto;color:var(--text-dim)"><span data-i18n="favorites_label">즐겨찾기</span> <b id="favCount" style="color:var(--text)">0</b><span data-i18n="count_unit">개</span></span>
+    </div>
+    <div class="captured-list" id="capturedList"></div>
+    <div class="bottom-bar">
+      <button class="btn export" id="btnExportPdf" data-i18n="btn_export_pdf">📄 즐겨찾기 PDF로 내보내기</button>
+      <button class="btn" id="btnExportHtml" style="background:#2563eb;color:#fff;" data-i18n="btn_export_html">🌐 HTML 학습페이지 내보내기</button>
+      <button class="btn" id="btnLoadMeta" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);" data-i18n="btn_metaplayer">🎞️ 메타플레이어 (캡처이미지 열기)</button>
+      <input type="file" id="metaFile" accept="image/png" multiple style="display:none">
+      <button class="btn" id="btnQuiz" style="background:#8a5cf5;color:#fff;" data-i18n="btn_quiz">🧩 단어퀴즈</button>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="search-bar">
+      <input type="text" id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="자막에서 단어 검색... (예: 안녕)">
+    </div>
+    <div class="result-count" id="resultCount" data-i18n="result_count_initial">영상과 SRT를 먼저 불러오세요.</div>
+    <div class="subtitle-list" id="subtitleList"></div>
+  </div>
+</div>
+
+<!-- ── 단어퀴즈 모달 (영상 없이 메타이미지만으로도 동작) ── -->
+<!-- ── 학습이력 모달 (캘린더 히트맵) ── -->
+<div class="quiz-modal-backdrop" id="historyModal">
+  <div class="quiz-modal" style="width:640px;">
+    <h2 data-i18n="history_title">📅 학습이력</h2>
+    <div id="historySummary" style="display:flex; gap:24px; margin-bottom:18px; font-size:0.9em;"></div>
+    <div id="historyCalendar" style="max-height:400px; overflow-y:auto; padding-right:4px;"></div>
+    <div style="display:flex; gap:12px; margin-top:14px; font-size:0.72em; color:var(--text-dim); align-items:center;">
+      <span data-i18n="legend_low">적음</span>
+      <span style="width:12px;height:12px;background:var(--surface2);border-radius:2px;display:inline-block;"></span>
+      <span style="width:12px;height:12px;background:#2d5c3f;border-radius:2px;display:inline-block;"></span>
+      <span style="width:12px;height:12px;background:#3f9e5f;border-radius:2px;display:inline-block;"></span>
+      <span style="width:12px;height:12px;background:var(--green);border-radius:2px;display:inline-block;"></span>
+      <span data-i18n="legend_high">많음</span>
+    </div>
+    <div class="quiz-actions" style="margin-top:20px;">
+      <button class="btn" id="btnHistoryReset" style="background:#c0392b;color:#fff;" data-i18n="btn_reset_history">🗑 학습이력 초기화</button>
+      <button class="btn" id="btnHistoryClose" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);" data-i18n="btn_close">✕ 닫기</button>
+    </div>
+  </div>
+</div>
+
+<div class="quiz-modal-backdrop" id="quizModal">
+  <div class="quiz-modal">
+    <h2 data-i18n="quiz_title">🧩 단어퀴즈 — 문장 순서 맞추기</h2>
+    <div class="quiz-controls">
+      <button class="btn" id="btnQuizLoadFolder" style="background:#8a5cf5;color:#fff;" data-i18n="btn_quiz_load_folder">📂 capture 폴더 불러오기</button>
+      <button class="btn" id="btnResetLearned" style="background:#c0392b;color:#fff;" data-i18n="btn_reset_learned">🗑 학습완료 목록 초기화</button>
+      <span id="quizFolderStatus" style="font-size:0.8em;"></span>
+    </div>
+    <div class="quiz-controls">
+      <label><input type="radio" name="quizLang" value="ko" checked> <span data-i18n="quiz_lang_ko">한글 문제</span></label>
+      <label><input type="radio" name="quizLang" value="en"> <span data-i18n="quiz_lang_en">English 문제</span></label>
+      <label><span data-i18n="quiz_min_words">최소 단어수</span> <input type="number" id="quizMinWords" value="10" min="2"></label>
+      <button class="btn" id="btnQuizNew" style="background:var(--primary);color:#fff;" data-i18n="btn_quiz_new">🔄 랜덤 새 문제</button>
+      <button class="btn" id="btnQuizClose" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);margin-left:auto;" data-i18n="btn_close">✕ 닫기</button>
+    </div>
+
+    <div class="quiz-layout">
+      <div class="quiz-main">
+        <div class="quiz-img-wrap">
+          <img id="quizImg" class="quiz-img" src="" style="display:none;">
+          <div id="quizHintOverlay" class="quiz-hint-overlay" style="display:none;"></div>
+        </div>
+        <div class="quiz-feedback" id="quizFeedback"></div>
+        <div style="font-size:0.78em;color:var(--text-dim);margin-bottom:4px;" data-i18n="quiz_answer_hint">정답 순서 (클릭한 단어가 순서대로 여기 채워집니다 — 채워진 단어를 다시 클릭하면 취소):</div>
+        <div class="quiz-answer-row" id="quizAnswerRow"></div>
+        <div style="font-size:0.78em;color:var(--text-dim);margin-bottom:4px;" data-i18n="quiz_bank_hint">아래 흩어진 단어들을 순서대로 클릭하세요:</div>
+        <div class="quiz-bank" id="quizBank"></div>
+        <div class="quiz-actions">
+          <button class="btn" id="btnQuizCheck" style="background:var(--green);color:#fff;" data-i18n="btn_check">✅ 확인</button>
+          <button class="btn" id="btnQuizReset" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);" data-i18n="btn_reshuffle">↺ 다시 섞기</button>
+          <button class="btn" id="btnQuizTts" style="background:var(--primary);color:#fff;" data-i18n="btn_tts">🔊 문제 듣기(TTS)</button>
+          <button class="btn" id="btnQuizShowAnswer" style="background:#8a5cf5;color:#fff;" data-i18n="btn_show_answer">👁 정답보기</button>
+          <button class="btn" id="btnQuizMarkLearned" style="background:var(--green);color:#fff;" data-i18n="btn_mark_learned">✅ 학습완료 (다시 안풀기)</button>
+        </div>
+      </div>
+
+      <div class="quiz-picker">
+        <div class="quiz-picker-title" data-i18n="quiz_picker_title">📋 문제 선택 (클릭하면 그 이미지로 바로 출제)</div>
+        <div id="quizPickerList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<video id="capturePlayer" style="display:none" muted preload="auto"></video>
+<canvas id="captureCanvas" style="display:none"></canvas>
+
+<script>
+// ────────────────────────────────────────────────
+// SRT 파싱
+// ────────────────────────────────────────────────
+function parseSrtTime(t){
+  const [h,m,rest] = t.split(':');
+  const [s,ms] = rest.split(',');
+  return (+h)*3600 + (+m)*60 + (+s) + (+ms)/1000;
+}
+function secToSRT(sec){
+  if (isNaN(sec)) sec = 0;
+  const h = String(Math.floor(sec/3600)).padStart(2,'0');
+  const m = String(Math.floor((sec%3600)/60)).padStart(2,'0');
+  const s = String(Math.floor(sec%60)).padStart(2,'0');
+  return `${h}:${m}:${s}`;
+}
+function parseSrt(text){
+  const blocks = text.replace(/\r/g,'').trim().split(/\n\s*\n/);
+  return blocks.map((b,i)=>{
+    const lines = b.split('\n');
+    const timeLine = lines.find(l=>l.includes('-->'));
+    if(!timeLine) return null;
+    const [startStr,endStr] = timeLine.split('-->').map(s=>s.trim());
+    const textLines = lines.slice(lines.indexOf(timeLine)+1);
+    return {
+      idx: i,
+      start: parseSrtTime(startStr),
+      end: parseSrtTime(endStr),
+      text: textLines.join(' ').trim()
+    };
+  }).filter(Boolean);
+}
+function readFileAsText(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ev => resolve(ev.target.result);
+    reader.onerror = reject;
+    reader.readAsText(file, 'utf-8');
+  });
+}
+
+// ────────────────────────────────────────────────
+// 상태
+// ────────────────────────────────────────────────
+let subtitles = [];
+let videoTitle = 'video';
+let videoObjectUrl = null;
+let captured = []; // {fileName, dataUrl, ko, en, time}
+let dirHandle = null; // 선택한 폴더의 FileSystemDirectoryHandle (읽기+쓰기 권한)
+let loadedMetaCards = []; // 메타플레이어로 불러온 PNG들의 메타 (퀴즈 문제 소스로도 재사용)
+
+// ════════════════════════════════════════════════════════════════
+// ── 현지화 (KO/EN) — UI 문자열만 대상, 자막/캡처 내용은 번역하지 않음 ──
+// ════════════════════════════════════════════════════════════════
+const I18N = {
+  ko: {
+    app_title: '🔍 자막검색 + 캡처 프로토타입',
+    btn_open_folder: '📁 폴더 열기',
+    btn_history: '📅 학습이력',
+    btn_share: '🔗 공유하기',
+    lang_toggle: '🌐 EN',
+    topbar_label: '영상만 있고 자막이 없다면:',
+    link_hardsub: '🎞 하드섭(영상에 박힌 자막) 추출 신청',
+    link_asr: '🎙 무자막 영상 음성인식 추출 신청',
+    translate_bar_label: '🌐 전체번역 설정 —',
+    btn_translate_all: '🌐 구글 무료번역 실행',
+    btn_download_srt: '⬇ 번역 SRT 다운로드',
+    link_precise: '✨ 정밀번역 요청 →',
+    mt_disclaimer: '⚠️ 무료 기계번역은 참고용입니다 — 정확한 번역이 필요하면 위의 "정밀번역 요청"을 이용하세요.',
+    opt_ko: '원문 표시(캡처)',
+    opt_en: '번역 표시(캡처)',
+    ov_src: '원문',
+    ov_tgt: '번역',
+    ov_both: '모두',
+    ov_src_title: '화면 하단 원문 자막 표시/숨김',
+    ov_tgt_title: '화면 하단 번역 자막 표시/숨김',
+    ov_both_title: '원문+번역 자막 한번에 표시/숨김',
+    ov_fullscreen_title: '전체화면 (자막 유지됨)',
+    favorites_label: '즐겨찾기',
+    count_unit: '개',
+    btn_export_pdf: '📄 즐겨찾기 PDF로 내보내기',
+    btn_export_html: '🌐 HTML 학습페이지 내보내기',
+    btn_metaplayer: '🎞️ 메타플레이어 (캡처이미지 열기)',
+    btn_quiz: '🧩 단어퀴즈',
+    search_placeholder: '자막에서 단어 검색... (예: 안녕)',
+    result_count_initial: '영상과 SRT를 먼저 불러오세요.',
+    quiz_title: '🧩 단어퀴즈 — 문장 순서 맞추기',
+    btn_quiz_load_folder: '📂 capture 폴더 불러오기',
+    quiz_lang_ko: '원문 문제',
+    quiz_lang_en: '번역 문제',
+    quiz_min_words: '최소 단어수',
+    btn_quiz_new: '🔄 랜덤 새 문제',
+    btn_close: '✕ 닫기',
+    quiz_answer_hint: '정답 순서 (클릭한 단어가 순서대로 여기 채워집니다 — 채워진 단어를 다시 클릭하면 취소):',
+    quiz_bank_hint: '아래 흩어진 단어들을 순서대로 클릭하세요:',
+    btn_check: '✅ 확인',
+    btn_reshuffle: '↺ 다시 섞기',
+    btn_tts: '🔊 문제 듣기(TTS)',
+    btn_show_answer: '👁 정답보기',
+    btn_mark_learned: '✅ 학습완료 (다시 안풀기)',
+    quiz_picker_title: '📋 문제 선택 (클릭하면 그 이미지로 바로 출제)',
+    history_title: '📅 학습이력',
+    legend_low: '적음',
+    legend_high: '많음',
+    btn_reset_history: '🗑 학습이력 초기화',
+    btn_reset_learned: '🗑 학습완료 목록 초기화',
+    confirm_reset_learned: '"학습완료(다시 안풀기)" 표시를 전부 초기화할까요? 모든 캡처 이미지가 다시 퀴즈에 나올 수 있게 됩니다.',
+    learned_badge: '✅ 학습완료',
+    confirm_reset_history: '학습이력(캘린더 기록)을 초기화할까요? 이 작업은 되돌릴 수 없습니다.',
+    seek_btn: '▶ 재생위치로',
+    capture_btn: '📸 캡처',
+    seek_btn_title: '이 자막 위치로 이동',
+    capture_btn_title: '이 자막 캡처',
+    tts_tgt_title: '번역만 듣기',
+    tts_both_title: '원문+번역 듣기',
+    audio_extract_title: '이 구간 소리만 WAV로 저장',
+    audio_extract_fail: '오디오 추출에 실패했습니다. 파일 형식을 확인해주세요.',
+    scan_video_ok: '✅ 영상:',
+    scan_video_missing: '❌ 영상(mp4/mkv/mov/webm) 없음',
+    scan_srt_ok: '✅ 원문 SRT(접미사 없음):',
+    scan_srt_missing: '❌ 원문 SRT 없음 — 언어접미사(_en 등) 없는 .srt 필요',
+    scan_trans_ok: '✅ 번역 SRT:',
+    scan_trans_missing: '⚠️ 번역 SRT 없음 — "구글 무료번역" 버튼으로 그 자리에서 생성 가능',
+    scan_hint_suffix: '파일이 언어접미사 때문에 "번역"으로만 인식되고 있어요. 이 중 하나를 접미사 없이(예: video.srt) 이름 바꾸면 원문으로 인식됩니다.',
+    scan_other_srt: 'ℹ️ 그 외 인식 안 된 자막 파일:',
+    demo_license_notice: '※ 본 데모 영상은 저작권 문제없는 샘플 클립(Tears of Steel, CC-BY 3.0)입니다. (C) Blender Foundation',
+    line_translate_btn: '🌐 번역',
+    line_translating: '번역 중...',
+    line_translate_fail: '❌ 실패 (재시도)',
+    no_translation: '(번역 없음 — 클릭해서 직접 입력하거나 🌐 번역 버튼 사용)',
+    saved_flash: '✓ 저장됨',
+    manual_save: '⬇ 수동저장',
+    saved_to_disk: '💾 capture/ 저장됨',
+    meta_no_images: '아직 이미지가 없습니다.',
+    meta_close_search: '✕ 검색모드로 돌아가기',
+    meta_jump_btn: '▶ 해당 구간으로 이동',
+    recent_folder_btn: '📂 최근 폴더 다시 열기 ({name})',
+    recent_folder_opening: '여는 중...',
+    recent_folder_denied: '⚠️ 폴더 접근 권한이 거부되었습니다.',
+    recent_folder_gone: '⚠️ 최근 폴더를 열 수 없습니다 — 폴더가 이동/삭제되었을 수 있습니다.',
+    weekdays: ['일','월','화','수','목','금','토'],
+    month_label: (y,m)=> `${y}년 ${m+1}월`,
+  },
+  en: {
+    app_title: '🔍 Subtitle Search + Capture Prototype',
+    btn_open_folder: '📁 Open Folder',
+    btn_history: '📅 History',
+    btn_share: '🔗 Share',
+    lang_toggle: '🌐 KO',
+    topbar_label: 'No subtitles for your video?',
+    link_hardsub: '🎞 Request hardsub (burned-in) extraction',
+    link_asr: '🎙 Request speech-recognition extraction',
+    translate_bar_label: '🌐 Translation settings —',
+    btn_translate_all: '🌐 Run free Google Translate',
+    btn_download_srt: '⬇ Download translated SRT',
+    link_precise: '✨ Request precise translation →',
+    mt_disclaimer: '⚠️ Free machine translation is for reference only — for accuracy, use "Request precise translation" above.',
+    opt_ko: 'Show original (capture)',
+    opt_en: 'Show translation (capture)',
+    ov_src: 'ORIG',
+    ov_tgt: 'TRANS',
+    ov_both: 'BOTH',
+    ov_src_title: 'Show/hide original subtitle at the bottom',
+    ov_tgt_title: 'Show/hide translated subtitle at the bottom',
+    ov_both_title: 'Show/hide both subtitles at once',
+    ov_fullscreen_title: 'Fullscreen (subtitles stay visible)',
+    favorites_label: 'Favorites',
+    count_unit: '',
+    btn_export_pdf: '📄 Export favorites as PDF',
+    btn_export_html: '🌐 Export HTML study page',
+    btn_metaplayer: '🎞️ Meta Player (open capture images)',
+    btn_quiz: '🧩 Word Quiz',
+    search_placeholder: 'Search subtitles... (e.g. hello)',
+    result_count_initial: 'Load a video and SRT first.',
+    quiz_title: '🧩 Word Quiz — Arrange the Sentence',
+    btn_quiz_load_folder: '📂 Load capture/ folder',
+    quiz_lang_ko: 'Original text',
+    quiz_lang_en: 'Translated text',
+    quiz_min_words: 'Min. word count',
+    btn_quiz_new: '🔄 Random new question',
+    btn_close: '✕ Close',
+    quiz_answer_hint: 'Answer order (clicked words fill in here in order — click a filled word to undo):',
+    quiz_bank_hint: 'Click the scrambled words below in order:',
+    btn_check: '✅ Check',
+    btn_reshuffle: '↺ Reshuffle',
+    btn_tts: '🔊 Listen (TTS)',
+    btn_show_answer: '👁 Show answer',
+    btn_mark_learned: '✅ Mark learned (skip next time)',
+    quiz_picker_title: '📋 Choose a question (click an image to load it)',
+    history_title: '📅 Learning History',
+    legend_low: 'Less',
+    legend_high: 'More',
+    btn_reset_history: '🗑 Reset history',
+    btn_reset_learned: '🗑 Reset "learned" list',
+    confirm_reset_learned: 'Clear all "learned (skip)" marks? Every captured image can appear in the quiz again.',
+    learned_badge: '✅ Learned',
+    confirm_reset_history: 'Reset your learning history (calendar record)? This cannot be undone.',
+    seek_btn: '▶ Seek here',
+    capture_btn: '📸 Capture',
+    seek_btn_title: 'Seek to this subtitle',
+    capture_btn_title: 'Capture this subtitle',
+    tts_tgt_title: 'Listen to translation only',
+    tts_both_title: 'Listen to original + translation',
+    audio_extract_title: 'Save this segment as WAV',
+    audio_extract_fail: 'Failed to extract audio. Please check the file format.',
+    scan_video_ok: '✅ Video:',
+    scan_video_missing: '❌ No video file (mp4/mkv/mov/webm)',
+    scan_srt_ok: '✅ Original SRT (no suffix):',
+    scan_srt_missing: '❌ No original SRT — need a .srt without a language suffix (e.g. _en)',
+    scan_trans_ok: '✅ Translation SRT:',
+    scan_trans_missing: '⚠️ No translation SRT — click "Run free Google Translate" to generate one',
+    scan_hint_suffix: 'has a language suffix, so it\'s only recognized as a "translation". Rename one of these without a suffix (e.g. video.srt) to use it as the original.',
+    scan_other_srt: 'ℹ️ Other unrecognized subtitle files:',
+    demo_license_notice: '※ This demo clip is copyright-free sample footage (Tears of Steel, CC-BY 3.0). (C) Blender Foundation',
+    line_translate_btn: '🌐 Translate',
+    line_translating: 'Translating...',
+    line_translate_fail: '❌ Failed (retry)',
+    no_translation: '(No translation — click to type, or use the 🌐 Translate button)',
+    saved_flash: '✓ Saved',
+    manual_save: '⬇ Save manually',
+    saved_to_disk: '💾 Saved to capture/',
+    meta_no_images: 'No images yet.',
+    meta_close_search: '✕ Back to search',
+    meta_jump_btn: '▶ Jump to this moment',
+    recent_folder_btn: '📂 Reopen recent folder ({name})',
+    recent_folder_opening: 'Opening...',
+    recent_folder_denied: '⚠️ Folder access permission was denied.',
+    recent_folder_gone: '⚠️ Could not open the recent folder — it may have been moved or deleted.',
+    weekdays: ['Su','Mo','Tu','We','Th','Fr','Sa'],
+    month_label: (y,m)=> new Date(y,m,1).toLocaleString('en-US', { month:'long', year:'numeric' }),
+  }
+};
+let currentLang = localStorage.getItem('ui_lang') || 'en';
+function t(key){
+  const val = I18N[currentLang] && I18N[currentLang][key];
+  return (val !== undefined && val !== null) ? val : key;
+}
+
+function applyLang(){
+  document.documentElement.lang = currentLang;
+  document.body.classList.toggle('lang-en', currentLang === 'en');
+  document.body.classList.toggle('lang-ko', currentLang === 'ko');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{ el.placeholder = t(el.dataset.i18nPlaceholder); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{ el.title = t(el.dataset.i18nTitle); });
+  document.getElementById('btnLangToggle').textContent = t('lang_toggle');
+  const recentBtn = document.getElementById('btnRecentFolder');
+  if(recentBtn) recentBtn.textContent = t('recent_folder_btn').replace('{name}', recentBtn.dataset.folderName);
+  // 이미 렌더링된 동적 리스트들도 언어 반영해서 다시 그림
+  if(typeof renderResults === 'function' && subtitles.length) renderResults();
+  if(typeof renderCaptured === 'function') renderCaptured();
+  const licenseBadge = document.getElementById('demoLicenseBadge');
+  if(licenseBadge && licenseBadge.style.display !== 'none') licenseBadge.textContent = t('demo_license_notice');
+}
+document.getElementById('btnLangToggle').addEventListener('click', ()=>{
+  currentLang = currentLang === 'ko' ? 'en' : 'ko';
+  localStorage.setItem('ui_lang', currentLang);
+  applyLang();
+});
+
+const videoPlayer = document.getElementById('videoPlayer');
+const capturePlayer = document.getElementById('capturePlayer');
+const captureCanvas = document.getElementById('captureCanvas');
+const subtitleList = document.getElementById('subtitleList');
+const searchInput = document.getElementById('searchInput');
+const resultCount = document.getElementById('resultCount');
+const capturedList = document.getElementById('capturedList');
+const favCount = document.getElementById('favCount');
+const folderStatus = document.getElementById('folderStatus');
+const subtitleOverlay = document.getElementById('subtitleOverlay');
+
+// ────────────────────────────────────────────────
+// 네이티브 영상 전체화면 버튼을 누르면 <video> 혼자만 전체화면이 되어
+// 형제 엘리먼트인 자막 오버레이가 사라져버림 → wrapper(영상+자막) 전체를
+// 대신 전체화면 시켜서 자막이 계속 보이도록 가로채기
+// ────────────────────────────────────────────────
+const videoWrapEl = document.querySelector('.video-wrap');
+function redirectFullscreenToWrap(){
+  if(document.fullscreenElement === videoPlayer){
+    // exitFullscreen을 먼저 기다리면 그 사이 "사용자 제스처"가 끊겨 다음 requestFullscreen이
+    // 브라우저에 의해 거부될 수 있음 → 바로 wrapper로 전환 요청 (exit 없이)
+    (videoWrapEl.requestFullscreen ? videoWrapEl.requestFullscreen() : videoWrapEl.webkitRequestFullscreen())
+      .catch(err => console.warn('fullscreen 전환 실패:', err));
+  }
+}
+document.addEventListener('fullscreenchange', redirectFullscreenToWrap);
+document.addEventListener('webkitfullscreenchange', redirectFullscreenToWrap);
+
+// ────────────────────────────────────────────────
+// 재생 중 자막 오버레이 동기화 (+ 원문/번역 표시 토글 반영)
+// ────────────────────────────────────────────────
+let _lastActiveIdx = -1;
+let showSrcOverlay = true;
+let showTgtOverlay = true;
+
+function renderSubtitleOverlay(){
+  if (_lastActiveIdx === -1 || !subtitles[_lastActiveIdx]) { subtitleOverlay.innerHTML = ''; return; }
+  const s = subtitles[_lastActiveIdx];
+  const parts = [];
+  if (showSrcOverlay) parts.push(`<div class="line">${escapeHtml(s.text)}</div>`);
+  if (showTgtOverlay && s.en) parts.push(`<div class="line en">${escapeHtml(s.en)}</div>`);
+  subtitleOverlay.innerHTML = parts.join('');
+}
+
+videoPlayer.addEventListener('timeupdate', () => {
+  if (subtitles.length === 0) return;
+  const t = videoPlayer.currentTime;
+  const idx = subtitles.findIndex(s => t >= s.start && t < s.end);
+  if (idx === _lastActiveIdx) return;
+  _lastActiveIdx = idx;
+  renderSubtitleOverlay();
+});
+
+const btnToggleSrc = document.getElementById('btnToggleSrc');
+const btnToggleTgt = document.getElementById('btnToggleTgt');
+const btnToggleBoth = document.getElementById('btnToggleBoth');
+
+function syncOverlayToggleButtons(){
+  btnToggleSrc.classList.toggle('active', showSrcOverlay);
+  btnToggleTgt.classList.toggle('active', showTgtOverlay);
+  btnToggleBoth.classList.toggle('active', showSrcOverlay && showTgtOverlay);
+}
+btnToggleSrc.addEventListener('click', ()=>{
+  showSrcOverlay = !showSrcOverlay;
+  syncOverlayToggleButtons();
+  renderSubtitleOverlay();
+});
+btnToggleTgt.addEventListener('click', ()=>{
+  showTgtOverlay = !showTgtOverlay;
+  syncOverlayToggleButtons();
+  renderSubtitleOverlay();
+});
+btnToggleBoth.addEventListener('click', ()=>{
+  const turnOn = !(showSrcOverlay && showTgtOverlay);
+  showSrcOverlay = turnOn;
+  showTgtOverlay = turnOn;
+  syncOverlayToggleButtons();
+  renderSubtitleOverlay();
+});
+syncOverlayToggleButtons();
+
+// ────────────────────────────────────────────────
+// 커스텀 전체화면 버튼 — wrapper(영상+자막+툴바) 전체를 직접 전체화면 요청
+// (사용자 클릭 직후 동기적으로 호출되므로 브라우저 제스처 요건을 항상 만족함)
+// ────────────────────────────────────────────────
+document.getElementById('btnCustomFullscreen').addEventListener('click', ()=>{
+  if(document.fullscreenElement){
+    document.exitFullscreen();
+  } else {
+    (videoWrapEl.requestFullscreen || videoWrapEl.webkitRequestFullscreen).call(videoWrapEl);
+  }
+});
+
+// ────────────────────────────────────────────────
+// 폴더 선택 (File System Access API) → 영상+SRT 자동 로드
+// + 쓰기 가능한 핸들 보관 → 캡처 시 그 폴더 안 capture/ 에 자동 저장
+// ────────────────────────────────────────────────
+// ── IndexedDB에 폴더 핸들 저장/복원 (매번 새로 찾아갈 필요 없게) ──
+function idbOpen(){
+  return new Promise((resolve, reject)=>{
+    const req = indexedDB.open('subcap-db', 1);
+    req.onupgradeneeded = ()=> req.result.createObjectStore('handles');
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+async function idbSaveHandle(handle){
+  const db = await idbOpen();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction('handles', 'readwrite');
+    tx.objectStore('handles').put(handle, 'lastDir');
+    tx.oncomplete = resolve;
+    tx.onerror = ()=> reject(tx.error);
+  });
+}
+async function idbLoadHandle(){
+  const db = await idbOpen();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction('handles', 'readonly');
+    const req = tx.objectStore('handles').get('lastDir');
+    req.onsuccess = ()=> resolve(req.result || null);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+
+// ── 실제 폴더 스캔+로드 로직 (핸들만 있으면 재사용 가능하도록 분리) ──
+// InnovAI Editor의 "폴더 열기 팝업" 미리보기 체크리스트를 참고해서 만든 함수 —
+// 성공/실패 여부와 상관없이 폴더 안에 뭐가 있고 뭐가 없는지 항상 보여줌 (화면 위에 뜨는 토스트, 레이아웃 안 밀어냄)
+let _folderScanAutoHideTimer = null;
+function renderFolderScanInfo({ videoName, srtName, langSrtNames, otherSrtNames }){
+  const panel = document.getElementById('folderScanInfo');
+  clearTimeout(_folderScanAutoHideTimer);
+  panel.style.display = 'block';
+  const lines = [];
+  let hasWarning = false;
+  lines.push(videoName ? `${t('scan_video_ok')} <b>${escapeHtml(videoName)}</b>` : (hasWarning=true, t('scan_video_missing')));
+  lines.push(srtName ? `${t('scan_srt_ok')} <b>${escapeHtml(srtName)}</b>` : (hasWarning=true, t('scan_srt_missing')));
+
+  const langEntries = Object.entries(langSrtNames || {});
+  if(langEntries.length){
+    lines.push(`${t('scan_trans_ok')} ${langEntries.map(([code,name])=>`<b>${escapeHtml(name)}</b>(${code})`).join(', ')}`);
+  } else {
+    hasWarning = true;
+    lines.push(t('scan_trans_missing'));
+  }
+
+  // 원문 SRT가 없는데 언어접미사 붙은 파일만 있는 경우 → 바로 원인 알려주기
+  if(!srtName && langEntries.length){
+    hasWarning = true;
+    const hintNames = langEntries.map(([,name])=>name).join(', ');
+    lines.push(`💡 <span style="color:var(--mark);">${escapeHtml(hintNames)} ${t('scan_hint_suffix')}</span>`);
+  }
+  if(otherSrtNames && otherSrtNames.length){
+    lines.push(`${t('scan_other_srt')} ${otherSrtNames.map(escapeHtml).join(', ')}`);
+  }
+
+  panel.innerHTML = `<button id="btnCloseFolderScan" style="float:right; background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:1.1em; line-height:1; margin:-2px -4px 0 8px;">✕</button>${lines.join('<br>')}`;
+  document.getElementById('btnCloseFolderScan').addEventListener('click', ()=>{ panel.style.display = 'none'; });
+
+  // 영상+원문+번역 다 정상이면(경고 없음) 4초 후 자동으로 사라짐. 문제가 있으면 사용자가 닫을 때까지 유지.
+  if(!hasWarning){
+    _folderScanAutoHideTimer = setTimeout(()=>{ panel.style.display = 'none'; }, 4000);
+  }
+}
+
+async function loadFolderFromHandle(handle){
+  dirHandle = handle;
+
+  // 언어코드 붙은 번역 SRT(_en.srt, _ja.srt, _zh-CN.srt 등)는 전부 langSrtHandles에 모으고,
+  // 그 어떤 언어코드도 안 붙은 순수 .srt만 "원본(한글)"으로 인식한다.
+  const langCodes = Object.keys(TTS_LANG_MAP); // en, ja, zh-CN, de, es, fr, vi, th, ru, ko
+  const langSuffixPattern = new RegExp(`_(${langCodes.map(c=>c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})\\.srt$`, 'i');
+
+  let videoFileHandle = null, srtFileHandle = null;
+  const langSrtHandles = {};
+  for await (const [name, entry] of dirHandle.entries()){
+    if(entry.kind !== 'file') continue;
+    if(/\.(mp4|mkv|mov|webm)$/i.test(name)){
+      videoFileHandle = entry;
+    } else if(langSuffixPattern.test(name)){
+      const code = name.match(langSuffixPattern)[1];
+      langSrtHandles[code] = entry;
+    } else if(/\.srt$/i.test(name)){
+      srtFileHandle = entry; // 언어코드 없는 순수 .srt = 원본
+    }
+  }
+  const enSrtFileHandle = langSrtHandles[document.getElementById('targetLangSelect').value] || langSrtHandles['en'] || null;
+
+  const langSrtNamesForInfo = {};
+  for(const [code, h] of Object.entries(langSrtHandles)) langSrtNamesForInfo[code] = h.name;
+  renderFolderScanInfo({
+    videoName: videoFileHandle ? videoFileHandle.name : null,
+    srtName: srtFileHandle ? srtFileHandle.name : null,
+    langSrtNames: langSrtNamesForInfo
+  });
+
+  if(!videoFileHandle){ folderStatus.textContent = '⚠️ 폴더 안에 영상(mp4/mkv/mov/webm)이 없습니다.'; return false; }
+  if(!srtFileHandle){ folderStatus.textContent = '⚠️ 폴더 안에 SRT 자막이 없습니다.'; return false; }
+
+  const videoFile = await videoFileHandle.getFile();
+  videoTitle = videoFile.name.replace(/\.[^/.]+$/, '');
+  updateDemoLicenseBadge(videoFile.name);
+  if(videoObjectUrl) URL.revokeObjectURL(videoObjectUrl);
+  videoObjectUrl = URL.createObjectURL(videoFile);
+  videoPlayer.src = videoObjectUrl;
+
+  const koText = await (await srtFileHandle.getFile()).text();
+  const koSubs = parseSrt(koText);
+
+  let enSubs = [];
+  if(enSrtFileHandle){
+    const enText = await (await enSrtFileHandle.getFile()).text();
+    enSubs = parseSrt(enText);
+  }
+
+  subtitles = koSubs.map((s, i) => ({ ...s, en: enSubs[i] ? enSubs[i].text : '' }));
+  if(enSrtFileHandle){
+    const matchedCode = Object.keys(langSrtHandles).find(code => langSrtHandles[code] === enSrtFileHandle) || 'en';
+    secondaryLangCode = matchedCode;
+    document.getElementById('targetLangSelect').value = matchedCode; // 실제 로드된 언어로 드롭다운도 동기화
+  }
+
+  folderStatus.textContent =
+    `✅ ${videoFile.name} + ${srtFileHandle.name}${enSrtFileHandle ? ' + ' + enSrtFileHandle.name : ''} · 캡처는 capture/ 폴더에 자동저장됨`;
+  updateResultCount();
+  renderResults();
+
+  document.getElementById('translateBar').style.display = 'flex';
+  document.getElementById('btnDownloadTranslatedSrt').style.display = 'none';
+  document.getElementById('translateStatus').textContent = '';
+
+  idbSaveHandle(handle); // 다음에 빠르게 다시 열 수 있도록 저장
+  return true;
+}
+
+// ── 폴백: File System Access API 미지원 브라우저(Android Chrome, Firefox, Safari 등)용 ──
+// <input type=file webkitdirectory>로 폴더 선택 → dirHandle 없이 순수 File 객체만으로 동작.
+// 캡처는 자동저장 대신 개별 다운로드로 자동 대체됨(이미 captureSubtitle에 그 로직 있음).
+async function loadFolderFromFileList(files){
+  const langCodes = Object.keys(TTS_LANG_MAP);
+  const langSuffixPattern = new RegExp(`_(${langCodes.map(c=>c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})\\.srt$`, 'i');
+
+  let videoFile = null, srtFile = null;
+  const langSrtFiles = {};
+  for(const file of files){
+    const name = file.name;
+    if(/\.(mp4|mkv|mov|webm)$/i.test(name)) videoFile = file;
+    else if(langSuffixPattern.test(name)){
+      const code = name.match(langSuffixPattern)[1];
+      langSrtFiles[code] = file;
+    } else if(/\.srt$/i.test(name)) srtFile = file;
+  }
+  const enFile = langSrtFiles[document.getElementById('targetLangSelect').value] || langSrtFiles['en'] || null;
+
+  const langSrtNamesForInfo2 = {};
+  for(const [code, f] of Object.entries(langSrtFiles)) langSrtNamesForInfo2[code] = f.name;
+  renderFolderScanInfo({
+    videoName: videoFile ? videoFile.name : null,
+    srtName: srtFile ? srtFile.name : null,
+    langSrtNames: langSrtNamesForInfo2
+  });
+
+  if(!videoFile){ folderStatus.textContent = '⚠️ 폴더 안에 영상(mp4/mkv/mov/webm)이 없습니다.'; return false; }
+  if(!srtFile){ folderStatus.textContent = '⚠️ 폴더 안에 SRT 자막이 없습니다.'; return false; }
+
+  dirHandle = null; // 폴백 모드 — 폴더 핸들 없음
+
+  videoTitle = videoFile.name.replace(/\.[^/.]+$/, '');
+  updateDemoLicenseBadge(videoFile.name);
+  if(videoObjectUrl) URL.revokeObjectURL(videoObjectUrl);
+  videoObjectUrl = URL.createObjectURL(videoFile);
+  videoPlayer.src = videoObjectUrl;
+
+  const koText = await srtFile.text();
+  const koSubs = parseSrt(koText);
+  let enSubs = [];
+  if(enFile){
+    const enText = await enFile.text();
+    enSubs = parseSrt(enText);
+  }
+  subtitles = koSubs.map((s, i) => ({ ...s, en: enSubs[i] ? enSubs[i].text : '' }));
+  if(enFile){
+    const matchedCode = Object.keys(langSrtFiles).find(code => langSrtFiles[code] === enFile) || 'en';
+    secondaryLangCode = matchedCode;
+    document.getElementById('targetLangSelect').value = matchedCode;
+  }
+
+  folderStatus.textContent = currentLang==='ko'
+    ? `✅ ${videoFile.name} + ${srtFile.name}${enFile ? ' + ' + enFile.name : ''} · (이 브라우저는 자동저장 미지원 — 캡처는 개별 다운로드)`
+    : `✅ ${videoFile.name} + ${srtFile.name}${enFile ? ' + ' + enFile.name : ''} · (auto-save unsupported here — captures download individually)`;
+  updateResultCount();
+  renderResults();
+
+  document.getElementById('translateBar').style.display = 'flex';
+  document.getElementById('btnDownloadTranslatedSrt').style.display = 'none';
+  document.getElementById('translateStatus').textContent = '';
+  return true;
+}
+document.getElementById('folderInputFallback').addEventListener('change', async (e)=>{
+  await loadFolderFromFileList(Array.from(e.target.files));
+});
+
+document.getElementById('btnPickFolder').addEventListener('click', async ()=>{
+  if(!window.showDirectoryPicker){
+    // File System Access API 미지원(Android Chrome, Firefox, Safari 등) → 예전 방식으로 폴백
+    document.getElementById('folderInputFallback').click();
+    return;
+  }
+  let handle;
+  try{
+    handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+  } catch(err){
+    return; // 사용자가 취소함
+  }
+  await loadFolderFromHandle(handle);
+});
+
+// ── 시작 시 마지막 폴더가 기억나 있으면 "다시 열기" 버튼 노출 ──
+(async function initRecentFolder(){
+  if(!window.showDirectoryPicker) return;
+  try{
+    const handle = await idbLoadHandle();
+    if(!handle) return;
+    const recentBtn = document.createElement('button');
+    recentBtn.id = 'btnRecentFolder';
+    recentBtn.className = 'btn';
+    recentBtn.style.background = 'var(--green)';
+    recentBtn.style.color = '#fff';
+    recentBtn.dataset.folderName = handle.name;
+    recentBtn.textContent = t('recent_folder_btn').replace('{name}', handle.name);
+    recentBtn.addEventListener('click', async ()=>{
+      recentBtn.disabled = true;
+      recentBtn.textContent = t('recent_folder_opening');
+      try{
+        const perm = await handle.queryPermission({ mode: 'readwrite' });
+        if(perm !== 'granted'){
+          const req = await handle.requestPermission({ mode: 'readwrite' });
+          if(req !== 'granted'){
+            folderStatus.textContent = t('recent_folder_denied');
+            recentBtn.remove();
+            return;
+          }
+        }
+        const ok = await loadFolderFromHandle(handle);
+        if(ok) recentBtn.remove();
+        else recentBtn.disabled = false;
+      } catch(err){
+        console.error(err);
+        folderStatus.textContent = t('recent_folder_gone');
+        recentBtn.remove();
+      }
+    });
+    document.querySelector('.file-inputs').prepend(recentBtn);
+  } catch(err){
+    console.error('최근 폴더 정보 로드 실패:', err);
+  }
+})();
+
+function updateResultCount(){
+  if(subtitles.length===0){
+    resultCount.textContent = '폴더를 선택해서 영상+SRT를 불러오세요.';
+  } else {
+    resultCount.textContent = `자막 ${subtitles.length}개 로드됨 — 검색어를 입력하세요.`;
+  }
+}
+
+// ────────────────────────────────────────────────
+// 검색 + 렌더링
+// ────────────────────────────────────────────────
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+let _mainVoicesReady = null;
+function getMainVoices(){
+  if(_mainVoicesReady) return _mainVoicesReady;
+  _mainVoicesReady = new Promise(resolve=>{
+    const existing = speechSynthesis.getVoices();
+    if(existing.length){ resolve(existing); return; }
+    speechSynthesis.onvoiceschanged = ()=> resolve(speechSynthesis.getVoices());
+    setTimeout(()=>resolve(speechSynthesis.getVoices()), 1000);
+  });
+  return _mainVoicesReady;
+}
+// ── 여러 언어를 순서대로 이어서 읽어주는 TTS 헬퍼 (다국어 지원) ──
+// items: [{text:'...', lang:'ko-KR'}, {text:'...', lang:'en-US'}, ...] — 비어있는 text는 자동 스킵
+async function speakQueue(items){
+  if(!window.speechSynthesis){
+    alert(currentLang==='ko' ? '이 브라우저는 음성합성(SpeechSynthesis)을 지원하지 않습니다.' : 'This browser does not support SpeechSynthesis.');
+    return;
+  }
+  speechSynthesis.cancel();
+  const voices = await getMainVoices();
+  items.filter(it => it.text && it.text.trim()).forEach(it=>{
+    const utter = new SpeechSynthesisUtterance(it.text);
+    utter.lang = it.lang;
+    const exact = voices.find(v=>v.lang===it.lang);
+    const partial = voices.find(v=>v.lang && v.lang.startsWith((it.lang||'').split('-')[0]));
+    if(exact) utter.voice = exact; else if(partial) utter.voice = partial;
+    speechSynthesis.speak(utter); // speechSynthesis가 큐에 쌓인 순서대로 이어서 재생함
+  });
+}
+function highlightMatch(text, query){
+  if(!query) return escapeHtml(text);
+  const escaped = escapeHtml(text);
+  const escQuery = escapeHtml(query);
+  const re = new RegExp(escQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi');
+  return escaped.replace(re, m=>`<mark>${m}</mark>`);
+}
+
+function renderResults(){
+  const query = searchInput.value.trim();
+  subtitleList.innerHTML = '';
+
+  if(subtitles.length===0) return;
+
+  const matches = query ? subtitles.filter(s=>s.text.includes(query)) : subtitles;
+  resultCount.textContent = query
+    ? (currentLang==='ko' ? `"${query}" 검색결과: ${matches.length}개` : `Results for "${query}": ${matches.length}`)
+    : (currentLang==='ko' ? `자막 ${subtitles.length}개 (전체표시 — 검색어 입력시 필터링)` : `${subtitles.length} subtitles (showing all — type to filter)`);
+
+  matches.slice(0, 200).forEach(sub=>{
+    const item = document.createElement('div');
+    item.className = 'sub-item';
+    item.innerHTML = `
+      <div class="sub-time">${secToSRT(sub.start)} → ${secToSRT(sub.end)}<span class="save-flash">${t('saved_flash')}</span></div>
+      <div class="sub-text editable-text" contenteditable="true" spellcheck="false" data-field="ko">${highlightMatch(sub.text, query)}</div>
+      <div class="sub-text en-line editable-text" contenteditable="true" spellcheck="false" data-field="en" style="color:var(--text-dim); font-size:0.85em;">${escapeHtml(sub.en || '')}</div>
+      <div class="sub-actions">
+        <button class="btn btn-seek icon-btn" title="${t('seek_btn_title')}">▶</button>
+        <button class="btn icon-btn" style="background:var(--green)" class="btn-capture" title="${t('capture_btn_title')}">📸</button>
+        <button class="btn btn-audio-extract icon-btn" style="background:var(--orange,#c2712f);" title="${t('audio_extract_title')}">🎵</button>
+        <button class="btn btn-speak-tgt icon-btn" style="background:var(--primary);" title="${t('tts_tgt_title')}">🔊</button>
+        <button class="btn btn-speak-both icon-btn" style="background:var(--primary-dim);" title="${t('tts_both_title')}">🔊+</button>
+        ${!sub.en ? `<button class="btn btn-line-translate" style="background:var(--primary);">${t('line_translate_btn')}</button>` : ''}
+      </div>
+    `;
+    item.querySelector('.btn-seek').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      seekMain(sub);
+    });
+    item.querySelectorAll('.btn')[1].addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      await captureSubtitle(sub);
+    });
+    item.querySelector('.btn-audio-extract').addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const btn = e.currentTarget;
+      const original = btn.textContent;
+      btn.textContent = '⏳';
+      btn.disabled = true;
+      try{
+        await extractAndDownloadAudioSegment(sub);
+      }catch(err){
+        console.error('오디오 추출 실패:', err);
+        alert(t('audio_extract_fail'));
+      }finally{
+        btn.textContent = original;
+        btn.disabled = false;
+      }
+    });
+    item.querySelector('.btn-speak-tgt').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      speakQueue([{ text: sub.en, lang: secondaryTtsLang() }]);
+    });
+    item.querySelector('.btn-speak-both').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      speakQueue([
+        { text: sub.text, lang: 'ko-KR' },
+        { text: sub.en, lang: secondaryTtsLang() }
+      ]);
+    });
+    const translateBtn = item.querySelector('.btn-line-translate');
+    if(translateBtn){
+      translateBtn.addEventListener('click', async (e)=>{
+        e.stopPropagation();
+        translateBtn.disabled = true;
+        translateBtn.textContent = t('line_translating');
+        try{
+          const target = document.getElementById('targetLangSelect').value;
+          const translated = await googleTranslateOne(sub.text, target);
+          sub.en = translated;
+          secondaryLangCode = target;
+          renderResults(); // 갱신해서 이 줄에 번역결과 반영 + 버튼 제거
+        } catch(err){
+          console.error(err);
+          translateBtn.disabled = false;
+          translateBtn.textContent = t('line_translate_fail');
+        }
+      });
+    }
+
+    // ── 자막 직접 편집 (contenteditable) — 클릭해서 오타/번역 바로 수정 가능 ──
+    const flashEl = item.querySelector('.save-flash');
+    item.querySelectorAll('.editable-text').forEach(el=>{
+      el.addEventListener('click', e=>e.stopPropagation());
+      el.addEventListener('mousedown', e=>e.stopPropagation());
+      el.addEventListener('keydown', e=>{
+        if(e.key === 'Enter'){ e.preventDefault(); el.blur(); }
+      });
+      el.addEventListener('blur', ()=>{
+        const field = el.dataset.field;
+        const newText = el.textContent.trim();
+        if(field === 'ko'){
+          sub.text = newText;
+        } else if(field === 'en'){
+          sub.en = newText;
+          if(translateBtn) translateBtn.style.display = newText ? 'none' : '';
+        }
+        flashEl.classList.add('show');
+        setTimeout(()=>flashEl.classList.remove('show'), 900);
+      });
+    });
+
+    item.addEventListener('click', ()=> seekMain(sub));
+    subtitleList.appendChild(item);
+  });
+}
+
+function seekMain(sub){
+  if(!videoPlayer.src) return;
+  videoPlayer.currentTime = sub.start;
+  videoPlayer.play();
+  document.querySelectorAll('.sub-item').forEach(el=>el.classList.remove('active'));
+}
+
+searchInput.addEventListener('input', renderResults);
+
+// ────────────────────────────────────────────────
+// 백그라운드 캡처 (숨겨진 video+canvas)
+// ────────────────────────────────────────────────
+function getVideoTitle(){ return videoTitle || 'video'; }
+
+// 데모용 샘플 클립(Tears of Steel, CC-BY)일 때만 저작권 출처 표시를 보여줌 —
+// 사용자 본인 콘텐츠에는 뜨지 않도록 파일명으로 판별
+function updateDemoLicenseBadge(fileName){
+  const badge = document.getElementById('demoLicenseBadge');
+  const isDemoClip = /^tos_clip/i.test((fileName || '').replace(/\.[^/.]+$/, ''));
+  if(isDemoClip){
+    badge.textContent = t('demo_license_notice');
+    badge.style.display = 'inline';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ────────────────────────────────────────────────
+// 자막 구간 오디오 추출 (ffmpeg.wasm 없이 Web Audio API로 처리)
+// 영상 파일을 한 번만 디코딩해서 캐시해두고, 구간마다 AudioBuffer를 잘라 WAV로 저장
+// ────────────────────────────────────────────────
+let _decodedAudioCache = { url: null, buffer: null, promise: null };
+
+async function getDecodedAudioBuffer(){
+  if(_decodedAudioCache.url === videoObjectUrl && _decodedAudioCache.buffer){
+    return _decodedAudioCache.buffer;
+  }
+  if(_decodedAudioCache.url === videoObjectUrl && _decodedAudioCache.promise){
+    return _decodedAudioCache.promise;
+  }
+  const promise = (async ()=>{
+    const res = await fetch(videoObjectUrl);
+    const arrayBuffer = await res.arrayBuffer();
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+    _decodedAudioCache = { url: videoObjectUrl, buffer: audioBuffer, promise: null };
+    return audioBuffer;
+  })();
+  _decodedAudioCache = { url: videoObjectUrl, buffer: null, promise };
+  return promise;
+}
+
+function sliceAudioBuffer(audioBuffer, startSec, endSec, opts){
+  const sr = audioBuffer.sampleRate;
+  const PAD_SEC = 0.12;   // 앞뒤로 살짝 여유를 둬서 단어 시작/끝이 안 잘리게 함 (단, 이웃 자막 경계는 절대 안 넘음)
+  const FADE_SEC = 0.025; // 경계에서 "뚝" 끊기는 느낌(클릭음) 없애는 짧은 페이드
+  const maxPadBefore = opts && opts.maxPadBefore !== undefined ? opts.maxPadBefore : PAD_SEC;
+  const maxPadAfter = opts && opts.maxPadAfter !== undefined ? opts.maxPadAfter : PAD_SEC;
+  const padBefore = Math.min(PAD_SEC, maxPadBefore);
+  const padAfter = Math.min(PAD_SEC, maxPadAfter);
+
+  const paddedStart = Math.max(0, startSec - padBefore);
+  const paddedEnd = endSec + padAfter;
+  const startSample = Math.max(0, Math.floor(paddedStart * sr));
+  const endSample = Math.min(audioBuffer.length, Math.ceil(paddedEnd * sr));
+  const frameCount = Math.max(1, endSample - startSample);
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const sliced = ctx.createBuffer(audioBuffer.numberOfChannels, frameCount, sr);
+
+  const fadeSamples = Math.min(Math.floor(FADE_SEC * sr), Math.floor(frameCount / 2));
+  for(let ch=0; ch<audioBuffer.numberOfChannels; ch++){
+    const srcData = audioBuffer.getChannelData(ch).subarray(startSample, startSample + frameCount);
+    const out = new Float32Array(srcData); // 복사본 — 원본 버퍼는 건드리지 않음
+    for(let i=0; i<fadeSamples; i++){
+      const g = i / fadeSamples; // 0→1 선형 페이드인
+      out[i] *= g;
+      out[frameCount - 1 - i] *= g; // 끝부분은 반대로 1→0 페이드아웃
+    }
+    sliced.copyToChannel(out, ch);
+  }
+  return sliced;
+}
+
+function audioBufferToWavBlob(buffer){
+  const numCh = buffer.numberOfChannels;
+  const sr = buffer.sampleRate;
+  const bytesPerSample = 2; // 16-bit PCM
+  const blockAlign = numCh * bytesPerSample;
+  const dataLength = buffer.length * blockAlign;
+  const bufferArr = new ArrayBuffer(44 + dataLength);
+  const view = new DataView(bufferArr);
+
+  function writeStr(offset, str){ for(let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i)); }
+
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + dataLength, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true); // PCM
+  view.setUint16(22, numCh, true);
+  view.setUint32(24, sr, true);
+  view.setUint32(28, sr * blockAlign, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, dataLength, true);
+
+  const channels = [];
+  for(let ch=0; ch<numCh; ch++) channels.push(buffer.getChannelData(ch));
+  let offset = 44;
+  for(let i=0; i<buffer.length; i++){
+    for(let ch=0; ch<numCh; ch++){
+      const s = Math.max(-1, Math.min(1, channels[ch][i]));
+      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      offset += 2;
+    }
+  }
+  return new Blob([bufferArr], { type: 'audio/wav' });
+}
+
+async function getAudioSegmentWavBlob(sub){
+  const fullBuffer = await getDecodedAudioBuffer();
+  // 바로 앞/뒤 자막의 소리를 물어오지 않도록, 이웃 자막과의 간격 절반을 넘지 않는 선에서만 패딩을 줌
+  const idxInList = subtitles.indexOf(sub);
+  const prevSub = idxInList > 0 ? subtitles[idxInList - 1] : null;
+  const nextSub = (idxInList >= 0 && idxInList < subtitles.length - 1) ? subtitles[idxInList + 1] : null;
+  const gapBefore = prevSub ? (sub.start - prevSub.end) : Infinity;
+  const gapAfter = nextSub ? (nextSub.start - sub.end) : Infinity;
+  const sliced = sliceAudioBuffer(fullBuffer, sub.start, sub.end, {
+    maxPadBefore: Math.max(0, gapBefore / 2),
+    maxPadAfter: Math.max(0, gapAfter / 2)
+  });
+  return audioBufferToWavBlob(sliced);
+}
+
+// capture/ 폴더(PNG랑 동일한 위치)에 우선 저장 시도, dirHandle이 없으면 일반 다운로드로 폴백
+async function saveAudioSegmentToCaptureFolder(sub, blob){
+  const fileName = `${getVideoTitle()}_${secondaryLangCode}_${sub.idx}.wav`;
+  if(dirHandle){
+    try{
+      const captureDir = await dirHandle.getDirectoryHandle('capture', { create: true });
+      const fileHandle = await captureDir.getFileHandle(fileName, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return { fileName, savedToDisk: true };
+    } catch(err){
+      console.error('capture/ 폴더에 wav 저장 실패, 다운로드로 대체:', err);
+    }
+  }
+  // 폴백: 폴더 접근이 없거나 실패한 경우 일반 다운로드
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 3000);
+  return { fileName, savedToDisk: false };
+}
+
+async function extractAndDownloadAudioSegment(sub){
+  const blob = await getAudioSegmentWavBlob(sub);
+  return saveAudioSegmentToCaptureFolder(sub, blob);
+}
+
+async function captureSubtitleFrame(sub){
+  if(capturePlayer.src !== videoObjectUrl){
+    capturePlayer.src = videoObjectUrl;
+    await new Promise(res=>{
+      capturePlayer.addEventListener('loadedmetadata', res, { once:true });
+    });
+  }
+  const midTime = (sub.start + sub.end) / 2;
+
+  return new Promise((resolve, reject)=>{
+    const onSeeked = ()=>{
+      capturePlayer.removeEventListener('seeked', onSeeked);
+      try{
+        captureCanvas.width = capturePlayer.videoWidth;
+        captureCanvas.height = capturePlayer.videoHeight;
+        const ctx = captureCanvas.getContext('2d');
+        ctx.drawImage(capturePlayer, 0, 0);
+
+        // 자막 burn-in (옵션)
+        const showKo = document.getElementById('optKo').checked;
+        const showEn = document.getElementById('optEn').checked;
+        if(showKo || showEn){
+          const fontSize = Math.round(captureCanvas.height * 0.045);
+          ctx.textAlign = 'center';
+          ctx.lineWidth = fontSize * 0.15;
+          ctx.strokeStyle = 'black';
+          ctx.fillStyle = 'white';
+          const x = captureCanvas.width/2;
+          if(showKo && showEn){
+            drawLine(ctx, sub.text, x, captureCanvas.height*0.85, fontSize);
+            drawLine(ctx, sub.en || '', x, captureCanvas.height*0.92, fontSize*0.8);
+          } else if(showKo){
+            drawLine(ctx, sub.text, x, captureCanvas.height*0.88, fontSize);
+          } else if(showEn){
+            drawLine(ctx, sub.en || '', x, captureCanvas.height*0.88, fontSize);
+          }
+        }
+        resolve();
+      } catch(err){ reject(err); }
+    };
+    capturePlayer.addEventListener('seeked', onSeeked);
+    capturePlayer.currentTime = midTime;
+  });
+}
+function drawLine(ctx, text, x, y, fontSize){
+  if(!text) return;
+  ctx.font = `bold ${fontSize}px "Noto Sans KR", sans-serif`;
+  ctx.strokeText(text, x, y);
+  ctx.fillText(text, x, y);
+}
+
+// ────────────────────────────────────────────────
+// PNG iTXt 청크 embedding (순수 JS, 외부 라이브러리 없음)
+// ── tEXt는 PNG 규격상 Latin-1 전용이라 한글 등 유니코드를 넣으면 깨진다(ExifTool 등에서 mojibake).
+//    iTXt는 UTF-8을 표준으로 지원하므로 한글/이모지 등 전부 안전하게 저장됨.
+// ────────────────────────────────────────────────
+const CRC_TABLE = (()=>{
+  const table = new Uint32Array(256);
+  for(let n=0;n<256;n++){
+    let c = n;
+    for(let k=0;k<8;k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    table[n] = c >>> 0;
+  }
+  return table;
+})();
+function crc32(bytes){
+  let c = 0xFFFFFFFF;
+  for(let i=0;i<bytes.length;i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function u32ToBytes(n){
+  return [ (n>>>24)&0xFF, (n>>>16)&0xFF, (n>>>8)&0xFF, n&0xFF ];
+}
+function makeItxtChunk(keyword, text){
+  const kwBytes  = Array.from(new TextEncoder().encode(keyword)); // 키워드는 관례상 ASCII
+  const txtBytes = Array.from(new TextEncoder().encode(text));    // 본문은 UTF-8 그대로 (iTXt 표준 지원)
+  const data = [
+    ...kwBytes, 0,   // keyword + null
+    0,                // compression flag = 0 (비압축)
+    0,                // compression method = 0
+    0,                // language tag(빈 값) + null
+    0,                // translated keyword(빈 값) + null
+    ...txtBytes       // 실제 UTF-8 텍스트 (null 종료 없음, 청크 끝까지)
+  ];
+  const typeBytes = [0x69,0x54,0x58,0x74]; // 'iTXt'
+  const crc = crc32(new Uint8Array([...typeBytes, ...data]));
+  return new Uint8Array([
+    ...u32ToBytes(data.length),
+    ...typeBytes,
+    ...data,
+    ...u32ToBytes(crc)
+  ]);
+}
+function embedPngMetadata(pngBytes, metadata){
+  // IEND 청크 위치 찾기 (뒤에서부터: 마지막 12바이트가 IEND)
+  const bytes = new Uint8Array(pngBytes);
+  const iendStart = bytes.length - 12; // length(4)+type(4)+crc(4), IEND data는 0바이트
+
+  const chunks = [];
+  Object.entries(metadata).forEach(([k,v])=>{
+    if(v) chunks.push(makeItxtChunk(k, String(v)));
+  });
+
+  const totalLen = bytes.length + chunks.reduce((a,c)=>a+c.length,0);
+  const out = new Uint8Array(totalLen);
+  out.set(bytes.subarray(0, iendStart), 0);
+  let offset = iendStart;
+  chunks.forEach(c=>{ out.set(c, offset); offset += c.length; });
+  out.set(bytes.subarray(iendStart), offset);
+  return out;
+}
+function readPngMetadata(bytes){
+  const result = {};
+  let pos = 8; // PNG signature
+  while(pos < bytes.length){
+    const len = (bytes[pos]<<24)|(bytes[pos+1]<<16)|(bytes[pos+2]<<8)|bytes[pos+3];
+    const type = String.fromCharCode(bytes[pos+4],bytes[pos+5],bytes[pos+6],bytes[pos+7]);
+    const dataStart = pos+8;
+    const dataBytes = bytes.subarray(dataStart, dataStart+len);
+
+    if(type === 'tEXt'){
+      // 구버전 캡처(레거시) 호환용 — 원래 규격상 Latin-1이라 한글은 이미 깨진 상태로 저장돼있을 수 있음
+      const nullIdx = dataBytes.indexOf(0);
+      const keyword = new TextDecoder().decode(dataBytes.subarray(0,nullIdx));
+      const text = new TextDecoder('latin1').decode(dataBytes.subarray(nullIdx+1));
+      result[keyword] = text;
+    } else if(type === 'iTXt'){
+      let p = 0;
+      const kwEnd = dataBytes.indexOf(0, p);
+      const keyword = new TextDecoder().decode(dataBytes.subarray(p, kwEnd));
+      p = kwEnd + 1;
+      const compFlag = dataBytes[p]; p += 2; // compression flag + method
+      const langEnd = dataBytes.indexOf(0, p);
+      p = langEnd + 1;
+      const trKwEnd = dataBytes.indexOf(0, p);
+      p = trKwEnd + 1;
+      const textBytes = dataBytes.subarray(p);
+      result[keyword] = compFlag === 0
+        ? new TextDecoder('utf-8').decode(textBytes)
+        : '(압축된 iTXt는 지원하지 않음)';
+    }
+    if(type === 'IEND') break;
+    pos += 12 + len; // length+type+data+crc
+  }
+  return result;
+}
+
+// ────────────────────────────────────────────────
+// 캡처 실행 + 즐겨찾기 등록
+// ────────────────────────────────────────────────
+async function captureSubtitle(sub){
+  await captureSubtitleFrame(sub);
+  const dataUrl = captureCanvas.toDataURL('image/png');
+  const base64 = dataUrl.split(',')[1];
+  const binary = atob(base64);
+  const rawBytes = new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) rawBytes[i] = binary.charCodeAt(i);
+
+  const metadata = {
+    ko: sub.text,
+    en: sub.en || '',
+    time: `${secToSRT(sub.start)} → ${secToSRT(sub.end)}`,   // 사람이 읽는 구간 표시
+    start_sec: String(sub.start),                             // 메타플레이어가 정확히 되찾아갈 시작초
+    end_sec: String(sub.end),
+    source: getVideoTitle(),
+    // ↓ PNG 표준 키워드 — Windows 탐색기/macOS Finder 속성창이 이 이름들은 인식해서 표시해줌
+    Title: sub.text,
+    Description: sub.en ? `${sub.text} / ${sub.en}` : sub.text,
+    Author: getVideoTitle()
+  };
+  const embedded = embedPngMetadata(rawBytes, metadata);
+
+  const blob = new Blob([embedded], { type:'image/png' });
+  const url = URL.createObjectURL(blob);
+  const fileName = `${getVideoTitle()}_${secondaryLangCode}_${sub.idx}.png`;
+
+  let savedToDisk = false;
+  if(dirHandle){
+    try{
+      const captureDir = await dirHandle.getDirectoryHandle('capture', { create: true });
+      const fileHandle = await captureDir.getFileHandle(fileName, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(embedded);
+      await writable.close();
+      savedToDisk = true;
+    } catch(err){
+      console.error('capture/ 폴더 저장 실패:', err);
+    }
+  }
+
+  captured.push({
+    fileName, url, ko: sub.text, en: sub.en || '',
+    time: `${secToSRT(sub.start)} → ${secToSRT(sub.end)}`,
+    start: sub.start, end: sub.end, source: getVideoTitle(),
+    savedToDisk, audioBlob: null, ttsLang: secondaryTtsLang()
+  });
+
+  // 이미지 캡처와 동시에 같은 구간의 오디오도 capture/ 폴더에 자동 저장 (실패해도 이미지 캡처 흐름엔 영향 없음)
+  try{
+    const wavBlob = await getAudioSegmentWavBlob(sub);
+    await saveAudioSegmentToCaptureFolder(sub, wavBlob);
+    captured[captured.length - 1].audioBlob = wavBlob; // HTML 내보내기에서 재사용
+  }catch(err){
+    console.error('오디오 동시 추출 실패:', err);
+  }
+
+  renderCaptured();
+  logHistory('captured', fileName);
+}
+
+function renderCaptured(){
+  favCount.textContent = captured.length;
+  capturedList.innerHTML = '';
+  captured.forEach((c, i)=>{
+    const card = document.createElement('div');
+    card.className = 'cap-card';
+    const rightAction = c.savedToDisk
+      ? `<span style="font-size:0.72em; color:var(--green); white-space:nowrap;">${t('saved_to_disk')}</span>`
+      : `<a href="${c.url}" download="${c.fileName}">${t('manual_save')}</a>`;
+    card.innerHTML = `
+      <img src="${c.url}">
+      <div class="meta"><div class="ko">${escapeHtml(c.ko)}</div><div>${escapeHtml(c.en || '')}</div><div>${c.time}</div></div>
+      ${rightAction}
+    `;
+    capturedList.appendChild(card);
+  });
+}
+
+// ────────────────────────────────────────────────
+// 캡처된 PNG 다시 열어서 메타 읽기 테스트
+// ────────────────────────────────────────────────
+async function processMetaFiles(files){
+  if(files.length === 0) return;
+  const cards = [];
+  for(const file of files){
+    const buf = new Uint8Array(await file.arrayBuffer());
+    const meta = readPngMetadata(buf);
+    const thumbUrl = URL.createObjectURL(file);
+    cards.push({ thumbUrl, meta, fileName: file.name });
+  }
+  renderMetaPlayer(cards);
+  loadedMetaCards = cards;
+}
+
+document.getElementById('btnLoadMeta').addEventListener('click', async ()=>{
+  if(window.showOpenFilePicker){
+    // capture/ 폴더가 있으면 그 폴더에서, 없으면 방금 열었던 폴더에서 다이얼로그가 시작되게 함
+    let startInHandle;
+    if(dirHandle){
+      try{ startInHandle = await dirHandle.getDirectoryHandle('capture'); }
+      catch{ startInHandle = dirHandle; }
+    }
+    try{
+      const opts = {
+        multiple: true,
+        types: [{ description: 'PNG images', accept: { 'image/png': ['.png'] } }],
+      };
+      if(startInHandle) opts.startIn = startInHandle;
+      const handles = await window.showOpenFilePicker(opts);
+      const files = await Promise.all(handles.map(h => h.getFile()));
+      await processMetaFiles(files);
+    } catch(err){
+      if(err.name !== 'AbortError') console.error(err); // AbortError = 사용자가 취소함
+    }
+  } else {
+    document.getElementById('metaFile').click(); // File System Access API 미지원 브라우저용 폴백
+  }
+});
+document.getElementById('metaFile').addEventListener('change', async (e)=>{
+  await processMetaFiles(Array.from(e.target.files));
+});
+
+function renderMetaPlayer(cards){
+  searchInput.style.display = 'none';
+  resultCount.textContent = currentLang==='ko'
+    ? `🎞️ 메타플레이어 — 캡처 이미지 ${cards.length}개 (SRT/원본영상 없이 이미지만으로 복원됨)`
+    : `🎞️ Meta Player — ${cards.length} captured images (restored from images alone, no SRT/video needed)`;
+  subtitleList.innerHTML = '';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'btn';
+  closeBtn.style.margin = '4px 0 10px';
+  closeBtn.textContent = t('meta_close_search');
+  closeBtn.addEventListener('click', ()=>{
+    searchInput.style.display = '';
+    searchInput.value = '';
+    renderResults();
+  });
+  subtitleList.appendChild(closeBtn);
+
+  cards.forEach(c=>{
+    const meta = c.meta;
+    const canJump = meta.source && meta.source === videoTitle && videoPlayer.src && meta.start_sec !== undefined;
+    const unknownSource = currentLang==='ko' ? '출처 불명' : 'unknown source';
+    const noKoMeta = currentLang==='ko' ? '(원문 메타 없음)' : '(no text metadata)';
+    const jumpHint = currentLang==='ko'
+      ? `원본 영상("${escapeHtml(meta.source||'')}")을 먼저 폴더열기로 불러오면 이동 가능`
+      : `Open the original video ("${escapeHtml(meta.source||'')}") via Open Folder first to enable jumping`;
+
+    // 파일명({제목}_{언어코드}_{idx}.png)에서 실제 캡처 당시 언어코드를 추출 (세션이 달라도 정확한 발음 사용)
+    const fnMatch = (c.fileName || '').match(/_([a-zA-Z-]+)_\d+\.png$/i);
+    const imgLangCode = fnMatch ? fnMatch[1] : secondaryLangCode;
+    const imgTtsLang = TTS_LANG_MAP[imgLangCode] || secondaryTtsLang();
+
+    const item = document.createElement('div');
+    item.className = 'sub-item';
+    item.innerHTML = `
+      <div style="display:flex; gap:10px;">
+        <img src="${c.thumbUrl}" style="width:120px; height:68px; object-fit:cover; border-radius:6px; background:#111; flex-shrink:0;">
+        <div style="flex:1; min-width:0;">
+          <div class="sub-time">${escapeHtml(meta.time || '')} · ${escapeHtml(meta.source || unknownSource)}</div>
+          <div class="sub-text" style="margin:4px 0;">${escapeHtml(meta.ko || noKoMeta)}</div>
+          ${meta.en ? `<div class="sub-text" style="color:var(--text-dim); font-size:0.85em;">${escapeHtml(meta.en)}</div>` : ''}
+          <div style="margin-top:6px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <button class="btn ${canJump ? '' : ''}" ${canJump ? '' : 'disabled style="opacity:0.4;cursor:not-allowed;"'}>
+              ${t('meta_jump_btn')}
+            </button>
+            <button class="btn meta-speak-tgt" style="background:var(--primary);" title="번역만 듣기">🔊</button>
+            <button class="btn meta-speak-both" style="background:var(--primary-dim);" title="원문+번역 듣기">🔊+</button>
+            ${canJump ? '' : `<span style="font-size:0.72em; color:var(--text-dim);">${jumpHint}</span>`}
+          </div>
+        </div>
+      </div>
+    `;
+    item.querySelector('.meta-speak-tgt').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      speakQueue([{ text: meta.en, lang: imgTtsLang }]);
+    });
+    item.querySelector('.meta-speak-both').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      speakQueue([
+        { text: meta.ko, lang: 'ko-KR' },
+        { text: meta.en, lang: imgTtsLang }
+      ]);
+    });
+    if(canJump){
+      item.querySelector('button').addEventListener('click', ()=>{
+        videoPlayer.currentTime = parseFloat(meta.start_sec);
+        videoPlayer.play();
+      });
+    }
+    subtitleList.appendChild(item);
+  });
+}
+
+// ────────────────────────────────────────────────
+// PDF export (jsPDF CDN)
+// jsPDF 기본폰트(Helvetica)는 한글 글리프가 없어서 doc.text()로 한글을 쓰면 깨진다.
+// → 카드마다 canvas에 이미지+한글/영문 텍스트를 직접 그린 뒤, 그 canvas를 통째로
+//   페이지 이미지로 넣는 방식으로 우회 (canvas의 fillText는 Noto Sans KR로 한글 정상 렌더링됨).
+// ────────────────────────────────────────────────
+const script = document.createElement('script');
+script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+document.head.appendChild(script);
+
+function renderCardToCanvas(c){
+  // A4 비율에 맞춘 캔버스 (px 기준, 나중에 그대로 페이지 이미지로 삽입)
+  const W = 1240, H = 1754; // A4 @ ~150dpi
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  return new Promise((resolve)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      // 이미지 (16:9 비율로 상단에 배치)
+      const imgW = W - 120;
+      const imgH = imgW * 9/16;
+      ctx.drawImage(img, 60, 60, imgW, imgH);
+
+      let y = 60 + imgH + 70;
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#111';
+      ctx.font = 'bold 42px "Noto Sans KR", sans-serif';
+      wrapText(ctx, c.ko, 60, y, W - 120, 54);
+      y += Math.ceil(measureWrapLines(ctx, c.ko, W - 120) * 54) + 30;
+
+      if(c.en){
+        ctx.font = '32px "Noto Sans KR", sans-serif';
+        ctx.fillStyle = '#555';
+        wrapText(ctx, c.en, 60, y, W - 120, 42);
+        y += Math.ceil(measureWrapLines(ctx, c.en, W - 120) * 42) + 24;
+      }
+
+      ctx.font = '26px monospace';
+      ctx.fillStyle = '#888';
+      ctx.fillText(c.time || '', 60, y);
+
+      resolve(canvas.toDataURL('image/jpeg', 0.92));
+    };
+    img.src = c.url;
+  });
+}
+// 긴 텍스트 자동 줄바꿈 그리기
+function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+  const words = text.split(' ');
+  let line = '';
+  for(const w of words){
+    const test = line ? line + ' ' + w : w;
+    if(ctx.measureText(test).width > maxWidth && line){
+      ctx.fillText(line, x, y);
+      line = w;
+      y += lineHeight;
+    } else {
+      line = test;
+    }
+  }
+  if(line) ctx.fillText(line, x, y);
+}
+function measureWrapLines(ctx, text, maxWidth){
+  const words = text.split(' ');
+  let line = '', lines = 1;
+  for(const w of words){
+    const test = line ? line + ' ' + w : w;
+    if(ctx.measureText(test).width > maxWidth && line){ lines++; line = w; }
+    else { line = test; }
+  }
+  return lines;
+}
+
+// 저장 완료 알림 대신 "지금 열어볼까요?" 확인 후, 원하면 새 탭으로 바로 열어줌
+function notifyAndOfferOpen(blob, fileName, savedToOutputFolder){
+  const savedMsg = savedToOutputFolder
+    ? (currentLang==='ko' ? `output/${fileName}에 저장했습니다.` : `Saved to output/${fileName}`)
+    : (currentLang==='ko' ? '다운로드 폴더에 저장했습니다 (폴더 접근 불가).' : 'Saved to your downloads folder (no folder access).');
+  const askOpen = currentLang==='ko' ? `${savedMsg}\n\n지금 열어볼까요?` : `${savedMsg}\n\nOpen it now?`;
+  if(confirm(askOpen)){
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    setTimeout(()=>URL.revokeObjectURL(url), 60000); // 새 탭이 로드할 시간을 좀 넉넉히 줌
+  }
+}
+
+// output/ 폴더(capture/와 같은 급)에 우선 저장 시도, 안 되면 일반 다운로드로 폴백
+async function saveBlobToOutputFolder(blob, fileName){
+  if(dirHandle){
+    try{
+      const outDir = await dirHandle.getDirectoryHandle('output', { create: true });
+      const fileHandle = await outDir.getFileHandle(fileName, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return true;
+    }catch(err){
+      console.error('output/ 폴더 저장 실패, 다운로드로 대체:', err);
+    }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 3000);
+  return false;
+}
+
+document.getElementById('btnExportPdf').addEventListener('click', async ()=>{
+  if(captured.length===0){ alert('즐겨찾기(캡처)된 항목이 없습니다.'); return; }
+  if(!window.jspdf){ alert('PDF 라이브러리 로딩 중입니다. 잠시 후 다시 시도하세요.'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'px', format: [1240, 1754] });
+  for(let i=0;i<captured.length;i++){
+    if(i>0) doc.addPage([1240, 1754]);
+    const pageDataUrl = await renderCardToCanvas(captured[i]);
+    doc.addImage(pageDataUrl, 'JPEG', 0, 0, 1240, 1754);
+  }
+  const fileName = `${getVideoTitle()}_${currentLang==='ko' ? '학습카드' : 'studycards'}.pdf`;
+  const pdfBlob = doc.output('blob');
+  const saved = await saveBlobToOutputFolder(pdfBlob, fileName);
+  notifyAndOfferOpen(pdfBlob, fileName, saved);
+});
+
+// ────────────────────────────────────────────────
+// HTML 학습페이지 내보내기 — 이미지+원문(WAV/TTS)+번역(TTS) 그리드가 담긴
+// 완전히 독립된(오프라인에서도 열리는) index.html 한 장을 생성
+// ────────────────────────────────────────────────
+function blobToBase64(blob){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onloadend = ()=>resolve(reader.result); // data:...;base64,.... 형태로 바로 나옴
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function buildStudyHtmlData(){
+  const items = [];
+  for(const c of captured){
+    let imgData = null, audioData = null;
+    try{
+      const imgBlob = await (await fetch(c.url)).blob();
+      imgData = await blobToBase64(imgBlob);
+    }catch(err){ console.error('이미지 base64 변환 실패:', err); }
+    if(c.audioBlob){
+      try{ audioData = await blobToBase64(c.audioBlob); }
+      catch(err){ console.error('오디오 base64 변환 실패:', err); }
+    }
+    items.push({
+      ko: c.ko, en: c.en || '', time: c.time,
+      img: imgData, audio: audioData, ttsLang: c.ttsLang || 'en-US'
+    });
+  }
+  return items;
+}
+
+function studyHtmlTemplate(title, items){
+  const dataJson = JSON.stringify(items).replace(/</g, '\\u003c'); // 내보낸 페이지의 스크립트 종료태그 조기 인식 방지
+  const T = currentLang==='ko' ? {
+    searchPlaceholder: '단어 검색... (예: hello)',
+    swapTitle: '원문/번역 위치가 반대로 보이면 눌러서 바꾸기',
+    swapBtn: '🔄 위치바꾸기',
+    playAllBtn: '🔊 전체 재생',
+    stopBtn: '⏹ 정지',
+    playKoBtn: '▶ 원문 듣기',
+    playEnBtn: '▶ 번역 듣기',
+    modalSearchPlaceholder: '🔍 단어 검색해서 다른 카드로 이동...',
+    detailBtn: '🔍 상세',
+    dictPrefix: '📖 "',
+    dictSuffix: '" 사전에서 찾기'
+  } : {
+    searchPlaceholder: 'Search words... (e.g. hello)',
+    swapTitle: 'Click to flip if original/translation columns look swapped',
+    swapBtn: '🔄 Flip',
+    playAllBtn: '🔊 Play All',
+    stopBtn: '⏹ Stop',
+    playKoBtn: '▶ Play Original',
+    playEnBtn: '▶ Play Translation',
+    modalSearchPlaceholder: '🔍 Search a word to jump to another card...',
+    detailBtn: '🔍 Details',
+    dictPrefix: '📖 Look up "',
+    dictSuffix: '" in dictionary'
+  };
+  return `<!DOCTYPE html>
+<html lang="${currentLang}" translate="no">
+<head>
+<meta charset="UTF-8">
+<meta name="google" content="notranslate">
+<title>${title} — ${currentLang==='ko' ? '학습페이지' : 'Learning Page'}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{ --bg:#0f1117; --surface:#171a23; --surface2:#1f2330; --border:#2a2f3d; --text:#f0f0f5; --text-dim:#9aa0b4; --primary:#5b6ef5; --green:#22c37a; }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,'Noto Sans KR',sans-serif;}
+  header{position:sticky; top:0; background:var(--surface); border-bottom:1px solid var(--border); padding:14px 20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; z-index:5;}
+  header h1{font-size:1.05em; margin:0; white-space:nowrap;}
+  #search{flex:1; min-width:160px; padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text);}
+  .btn{background:var(--primary); color:#fff; border:none; padding:8px 14px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.85em;}
+  .btn.ghost{background:var(--surface2); border:1px solid var(--border); color:var(--text);}
+  .btn:disabled{opacity:0.5; cursor:not-allowed;}
+  #grid{padding:16px; display:flex; flex-direction:column; gap:10px; max-width:1100px; margin:0 auto;}
+  .row{display:grid; grid-template-columns:70px 1fr auto 1fr auto auto; gap:10px; align-items:center; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px 12px;}
+  .row img{width:70px; height:40px; object-fit:cover; border-radius:6px; background:#000; cursor:pointer;}
+  .row .ko{font-weight:600;}
+  .row .en{color:var(--text-dim); font-size:0.92em;}
+  .row .idx{color:var(--text-dim); font-size:0.75em;}
+  .iconbtn{background:transparent; border:1px solid var(--border); color:var(--text-dim); border-radius:6px; padding:5px 9px; cursor:pointer; font-size:0.85em;}
+  .iconbtn:hover{background:rgba(255,255,255,0.08); color:var(--text);}
+  .row.playing{outline:2px solid var(--green);}
+  #modalBg{display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:20; align-items:center; justify-content:center; padding:20px;}
+  #modalBg.open{display:flex;}
+  #modal{background:var(--surface); border-radius:14px; max-width:720px; width:100%; max-height:90vh; overflow:auto; padding:20px;}
+  #modal img{width:100%; border-radius:10px; background:#000;}
+  #modal .ko{font-size:1.3em; font-weight:700; margin:14px 0 6px;}
+  #modal .en{color:var(--text-dim); font-size:1.05em; margin-bottom:14px;}
+  #modalSearch{width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text); margin-bottom:10px;}
+  #modalList{display:flex; flex-direction:column; gap:6px; max-height:200px; overflow:auto; margin-top:10px;}
+  #modalList div{padding:6px 8px; border-radius:6px; cursor:pointer; font-size:0.88em;}
+  #modalList div:hover{background:var(--surface2);}
+  .closeBtn{float:right; background:none; border:none; color:var(--text-dim); font-size:1.4em; cursor:pointer;}
+  mark{background:#f5c542; color:#111; border-radius:3px;}
+  @media (max-width:640px){ .row{grid-template-columns:50px 1fr 1fr auto;} .row .idx{display:none;} }
+</style>
+</head>
+<body>
+<header>
+  <h1>📚 ${title}</h1>
+  <input id="search" placeholder="${T.searchPlaceholder}">
+  <button class="btn ghost" id="btnSwapCols" title="${T.swapTitle}">${T.swapBtn}</button>
+  <button class="btn" id="btnPlayAll">${T.playAllBtn}</button>
+  <button class="btn ghost" id="btnStop" style="display:none;">${T.stopBtn}</button>
+</header>
+<div id="grid"></div>
+
+<div id="modalBg">
+  <div id="modal">
+    <button class="closeBtn" id="btnCloseModal">✕</button>
+    <img id="modalImg">
+    <div class="ko" id="modalKo"></div>
+    <div class="en" id="modalEn"></div>
+    <div style="display:flex; gap:8px; margin-bottom:6px;">
+      <button class="btn ghost" id="modalPlayKo">${T.playKoBtn}</button>
+      <button class="btn ghost" id="modalPlayEn">${T.playEnBtn}</button>
+    </div>
+    <input id="modalSearch" placeholder="${T.modalSearchPlaceholder}">
+    <a id="dictLookupLink" href="#" target="_blank" rel="noopener" style="display:none; margin:-4px 0 10px; color:var(--primary); font-size:0.88em; text-decoration:none;"></a>    <div id="modalList"></div>
+  </div>
+</div>
+
+<script>
+const DATA = ${dataJson};
+let currentIdx = 0;
+let playingAll = false;
+let swapped = false; // "순서 바꾸기" 버튼 — 자동판별 결과를 전체적으로 한번 더 뒤집는 수동 보정용
+const HANGUL_RE = /[\uAC00-\uD7A3]/;
+
+// 캡처 당시 "타겟 언어가 한국어였는지"와 "실제로 ko/en 필드 중 어디에 한글이 들어있는지"를 대조해서
+// 원문/번역이 뒤바뀐 항목(옛날 파일명 설정 때 캡처된 것 등)을 자동으로 바로잡음
+function autoSwapForItem(item){
+  const targetWasKorean = (item.ttsLang || '').toLowerCase().startsWith('ko');
+  if(!targetWasKorean) return false; // 한국어가 타겟이 아니었으면 원래 규칙(ko=원문) 그대로 신뢰
+  const koHasHangul = HANGUL_RE.test(item.ko || '');
+  const enHasHangul = HANGUL_RE.test(item.en || '');
+  // 정상이면 en에 한글(번역결과)이 있어야 함. 대신 ko에만 한글이 있으면 뒤바뀐 것 → 자동 보정
+  if(koHasHangul && !enHasHangul) return true;
+  return false;
+}
+function isPrimaryKo(item){
+  // 자동판별 결과 XOR 수동토글 = 최종 방향
+  return autoSwapForItem(item) ? swapped : !swapped;
+}
+function primaryText(item){ return isPrimaryKo(item) ? item.ko : item.en; }
+function secondaryText(item){ return isPrimaryKo(item) ? item.en : item.ko; }
+function primaryLang(item){ return isPrimaryKo(item) ? 'ko-KR' : (item.ttsLang||'en-US'); }
+function secondaryLang(item){ return isPrimaryKo(item) ? (item.ttsLang||'en-US') : 'ko-KR'; }
+
+function highlight(text, q){
+  if(!q) return escapeHtml(text);
+  const i = text.toLowerCase().indexOf(q.toLowerCase());
+  if(i===-1) return escapeHtml(text);
+  return escapeHtml(text.slice(0,i)) + '<mark>' + escapeHtml(text.slice(i,i+q.length)) + '</mark>' + escapeHtml(text.slice(i+q.length));
+}
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+let _voicesReady = null;
+function getVoices(){
+  if(_voicesReady) return _voicesReady;
+  _voicesReady = new Promise(resolve=>{
+    const existing = speechSynthesis.getVoices();
+    if(existing.length){ resolve(existing); return; }
+    speechSynthesis.onvoiceschanged = ()=> resolve(speechSynthesis.getVoices());
+    // 일부 브라우저는 onvoiceschanged가 아예 안 불릴 수 있어 타임아웃 폴백도 둠
+    setTimeout(()=>resolve(speechSynthesis.getVoices()), 1000);
+  });
+  return _voicesReady;
+}
+function speak(text, lang){
+  return new Promise(async resolve=>{
+    if(!text || !window.speechSynthesis){ resolve(); return; }
+    const voices = await getVoices();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = lang || 'en-US';
+    const exact = voices.find(v=>v.lang===utter.lang);
+    const partial = voices.find(v=>v.lang && v.lang.startsWith(utter.lang.split('-')[0]));
+    if(exact) utter.voice = exact; else if(partial) utter.voice = partial;
+    utter.onend = resolve;
+    utter.onerror = resolve;
+    speechSynthesis.speak(utter);
+  });
+}
+// role: 'primary'(소스, WAV 있으면 WAV 우선) | 'secondary'(타겟, 항상 TTS)
+function playAudioOrTts(item, role){
+  return new Promise(resolve=>{
+    if(role==='primary' && item.audio){
+      const audio = new Audio(item.audio);
+      audio.onended = resolve;
+      audio.onerror = resolve;
+      audio.play();
+    } else if(role==='primary'){
+      speak(primaryText(item), primaryLang(item)).then(resolve);
+    } else {
+      speak(secondaryText(item), secondaryLang(item)).then(resolve);
+    }
+  });
+}
+
+function renderGrid(query){
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  DATA.forEach((item, idx)=>{
+    const pText = primaryText(item), sText = secondaryText(item);
+    if(query && !(pText.toLowerCase().includes(query.toLowerCase()) || sText.toLowerCase().includes(query.toLowerCase()))) return;
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.dataset.idx = idx;
+    row.innerHTML = \`
+      <img src="\${item.img||''}" data-open="\${idx}">
+      <div class="ko">\${highlight(pText, query)}</div>
+      <button class="iconbtn" data-play="primary:\${idx}">\${item.audio ? '▶ WAV' : '🔊 TTS'}</button>
+      <div class="en">\${highlight(sText, query)}</div>
+      <button class="iconbtn" data-play="secondary:\${idx}">🔊 TTS</button>
+      <button class="iconbtn" data-open="\${idx}">${T.detailBtn}</button>
+    \`;
+    grid.appendChild(row);
+  });
+  grid.querySelectorAll('[data-open]').forEach(el=>{
+    el.addEventListener('click', ()=>openModal(parseInt(el.dataset.open)));
+  });
+  grid.querySelectorAll('[data-play]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const [role, idx] = el.dataset.play.split(':');
+      playAudioOrTts(DATA[parseInt(idx)], role);
+    });
+  });
+}
+
+document.getElementById('btnSwapCols').addEventListener('click', ()=>{
+  swapped = !swapped;
+  renderGrid(document.getElementById('search').value);
+});
+
+document.getElementById('search').addEventListener('input', e=>renderGrid(e.target.value));
+
+function openModal(idx){
+  currentIdx = idx;
+  const item = DATA[idx];
+  document.getElementById('modalImg').src = item.img || '';
+  document.getElementById('modalKo').textContent = primaryText(item);
+  document.getElementById('modalEn').textContent = secondaryText(item);
+  document.getElementById('modalBg').classList.add('open');
+  document.getElementById('modalSearch').value = '';
+  document.getElementById('dictLookupLink').style.display = 'none';
+  renderModalList('');
+}
+document.getElementById('btnCloseModal').addEventListener('click', ()=>{
+  document.getElementById('modalBg').classList.remove('open');
+});
+document.getElementById('modalBg').addEventListener('click', e=>{
+  if(e.target.id==='modalBg') document.getElementById('modalBg').classList.remove('open');
+});
+document.getElementById('modalPlayKo').addEventListener('click', ()=>playAudioOrTts(DATA[currentIdx], 'primary'));
+document.getElementById('modalPlayEn').addEventListener('click', ()=>playAudioOrTts(DATA[currentIdx], 'secondary'));
+
+function renderModalList(query){
+  const list = document.getElementById('modalList');
+  list.innerHTML = '';
+  DATA.forEach((item, idx)=>{
+    const pText = primaryText(item), sText = secondaryText(item);
+    if(query && !(pText.toLowerCase().includes(query.toLowerCase()) || sText.toLowerCase().includes(query.toLowerCase()))) return;
+    const div = document.createElement('div');
+    div.innerHTML = highlight(pText, query) + ' <span style="color:var(--text-dim)">— ' + highlight(sText, query) + '</span>';
+    div.addEventListener('click', ()=>openModal(idx));
+    list.appendChild(div);
+  });
+}
+document.getElementById('modalSearch').addEventListener('input', e=>renderModalList(e.target.value));
+
+// 모달 안의 원문/번역 텍스트를 드래그로 선택하면, 그 단어로 로컬 리스트도 필터링하고
+// 사전(네이버 영어사전)에서 바로 찾아볼 수 있는 링크도 같이 띄움
+function handleTextSelectionSearch(){
+  const sel = window.getSelection().toString().trim();
+  const dictLink = document.getElementById('dictLookupLink');
+  if(sel && sel.length <= 50){
+    document.getElementById('modalSearch').value = sel;
+    renderModalList(sel);
+    dictLink.href = 'https://en.dict.naver.com/#/search?query=' + encodeURIComponent(sel);
+    dictLink.textContent = '${T.dictPrefix}' + sel + '${T.dictSuffix}';
+    dictLink.style.display = 'inline-block';
+  } else {
+    dictLink.style.display = 'none';
+  }
+}
+document.getElementById('modalKo').addEventListener('mouseup', handleTextSelectionSearch);
+document.getElementById('modalEn').addEventListener('mouseup', handleTextSelectionSearch);
+document.getElementById('modalKo').addEventListener('touchend', handleTextSelectionSearch);
+document.getElementById('modalEn').addEventListener('touchend', handleTextSelectionSearch);
+
+document.getElementById('btnPlayAll').addEventListener('click', async ()=>{
+  playingAll = true;
+  document.getElementById('btnPlayAll').style.display = 'none';
+  document.getElementById('btnStop').style.display = '';
+  const rows = document.querySelectorAll('#grid .row');
+  for(let i=0; i<DATA.length && playingAll; i++){
+    const row = document.querySelector('#grid .row[data-idx="'+i+'"]');
+    if(row) row.classList.add('playing');
+    await playAudioOrTts(DATA[i], 'primary');
+    if(!playingAll) break;
+    await playAudioOrTts(DATA[i], 'secondary');
+    if(row) row.classList.remove('playing');
+  }
+  playingAll = false;
+  document.getElementById('btnPlayAll').style.display = '';
+  document.getElementById('btnStop').style.display = 'none';
+});
+document.getElementById('btnStop').addEventListener('click', ()=>{
+  playingAll = false;
+  speechSynthesis.cancel();
+  document.getElementById('btnPlayAll').style.display = '';
+  document.getElementById('btnStop').style.display = 'none';
+});
+
+renderGrid('');
+<\/script>
+</body>
+</html>`;
+}
+
+// capture/ 폴더 전체를 스캔해서 png(+짝이 맞는 wav) 전부를 학습페이지용 데이터로 변환
+async function scanEntireCaptureFolder(){
+  if(!dirHandle) return [];
+  let captureDir;
+  try{ captureDir = await dirHandle.getDirectoryHandle('capture'); }
+  catch{ return []; }
+
+  const pngHandles = [];
+  const wavHandles = {};
+  for await (const [name, handle] of captureDir.entries()){
+    if(handle.kind !== 'file') continue;
+    if(/\.png$/i.test(name)) pngHandles.push({ name, handle });
+    else if(/\.wav$/i.test(name)) wavHandles[name.replace(/\.wav$/i,'')] = handle;
+  }
+
+  const items = [];
+  for(const { name, handle } of pngHandles){
+    try{
+      const file = await handle.getFile();
+      const buf = new Uint8Array(await file.arrayBuffer());
+      const meta = readPngMetadata(buf);
+      const imgData = await blobToBase64(file);
+      let audioData = null;
+      const baseName = name.replace(/\.png$/i,'');
+      const wavHandle = wavHandles[baseName];
+      if(wavHandle){
+        const wavFile = await wavHandle.getFile();
+        audioData = await blobToBase64(wavFile);
+      }
+      const fnMatch = name.match(/_([a-zA-Z-]+)_\d+\.png$/i);
+      const langCode = fnMatch ? fnMatch[1] : secondaryLangCode;
+      items.push({
+        ko: meta.ko || '', en: meta.en || '', time: meta.time || '',
+        img: imgData, audio: audioData, ttsLang: TTS_LANG_MAP[langCode] || secondaryTtsLang()
+      });
+    }catch(err){ console.error(`${name} 처리 실패:`, err); }
+  }
+  return items;
+}
+
+document.getElementById('btnExportHtml').addEventListener('click', async ()=>{
+  if(captured.length===0 && !dirHandle){ alert('즐겨찾기(캡처)된 항목이 없습니다.'); return; }
+  const useWholeFolder = dirHandle
+    ? confirm(currentLang==='ko'
+        ? 'capture/ 폴더 전체(이전에 캡처해둔 것 포함)를 넣을까요?\n\n확인 = 폴더 전체\n취소 = 오늘 세션에서 캡처한 것만'
+        : 'Include the ENTIRE capture/ folder (including older captures)?\n\nOK = whole folder\nCancel = only what you captured this session')
+    : false;
+
+  const btn = document.getElementById('btnExportHtml');
+  const original = btn.textContent;
+  btn.textContent = '⏳ 생성 중...';
+  btn.disabled = true;
+  try{
+    const items = useWholeFolder ? await scanEntireCaptureFolder() : await buildStudyHtmlData();
+    if(items.length === 0){ alert('내보낼 항목이 없습니다.'); return; }
+    const html = studyHtmlTemplate(getVideoTitle(), items);
+    const blob = new Blob([html], { type: 'text/html' });
+    const fileName = `${getVideoTitle()}_${currentLang==='ko' ? '학습페이지' : 'learning'}.html`;
+    const saved = await saveBlobToOutputFolder(blob, fileName);
+    notifyAndOfferOpen(blob, fileName, saved);
+  }catch(err){
+    console.error('HTML 내보내기 실패:', err);
+    alert('HTML 학습페이지 생성에 실패했습니다.');
+  }finally{
+    btn.textContent = original;
+    btn.disabled = false;
+  }
+});
+
+// ════════════════════════════════════════════════════════════════
+// ── 단어퀴즈 (영상 없이 메타이미지만으로 동작 — 캡처세션 + 불러온 메타이미지 소스 공용) ──
+// ════════════════════════════════════════════════════════════════
+const quizModal      = document.getElementById('quizModal');
+const quizImg         = document.getElementById('quizImg');
+const quizHintOverlay = document.getElementById('quizHintOverlay');
+const quizFeedback    = document.getElementById('quizFeedback');
+const quizAnswerRow   = document.getElementById('quizAnswerRow');
+const quizBank        = document.getElementById('quizBank');
+const quizMinWordsEl  = document.getElementById('quizMinWords');
+
+let quizWords = [];      // 정답 순서(원본) 단어 배열
+let quizSlots = [];      // 사용자가 채운 슬롯 (word 또는 null)
+let quizBankState = [];  // 아직 안 배치된 단어 칩들 {word, used}
+let quizCurrentText = ''; // 현재 문제 문장 원문(정답 비교용)
+let quizHintText = '';    // 반대 언어 번역(힌트용) — 정답 그 자체는 아니므로 노출해도 안전
+let quizCurrentLang = 'ko';
+// ── 번역된 두번째 언어("en" 필드)가 실제로 어떤 언어인지 추적 (일본어/중국어 등도 지원) ──
+let secondaryLangCode = 'en'; // 폴더의 _en.srt 로드시 기본값, 구글번역 실행시 선택한 타겟언어로 갱신됨
+const TTS_LANG_MAP = {
+  en: 'en-US', ja: 'ja-JP', 'zh-CN': 'zh-CN', 'zh-TW': 'zh-TW', de: 'de-DE',
+  es: 'es-ES', fr: 'fr-FR', it: 'it-IT', pt: 'pt-PT', nl: 'nl-NL', pl: 'pl-PL',
+  tr: 'tr-TR', vi: 'vi-VN', th: 'th-TH', id: 'id-ID', hi: 'hi-IN', ar: 'ar-SA',
+  ru: 'ru-RU', ko: 'ko-KR'
+};
+function secondaryTtsLang(){ return TTS_LANG_MAP[secondaryLangCode] || 'en-US'; }
+let quizCurrentFileName = ''; // 학습완료 표시용 식별자
+
+// ── "학습완료(다시 안풀기)" 로컬 저장 — 파일명만 저장, 자막 텍스트는 저장 안 함 ──
+const LEARNED_KEY = 'subquiz_learned_v1';
+function getLearnedSet(){
+  try{ return new Set(JSON.parse(localStorage.getItem(LEARNED_KEY) || '[]')); }
+  catch{ return new Set(); }
+}
+function markLearned(fileName){
+  if(!fileName) return;
+  const s = getLearnedSet();
+  s.add(fileName);
+  localStorage.setItem(LEARNED_KEY, JSON.stringify([...s]));
+}
+
+// ── 학습이력 로그 (날짜별 studied/captured 카운트 + 파일명만 저장 — 자막 텍스트는 저장 안 함) ──
+const HISTORY_KEY = 'subquiz_history_v1';
+function logHistory(field, fileName){
+  const dateKey = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const data = JSON.parse(localStorage.getItem(HISTORY_KEY) || '{}');
+  if(!data[dateKey]) data[dateKey] = { studied: 0, captured: 0, files: [] };
+  if(!data[dateKey].files) data[dateKey].files = []; // 예전 기록 호환
+  data[dateKey][field] = (data[dateKey][field] || 0) + 1;
+  if(fileName && !data[dateKey].files.includes(fileName)){
+    data[dateKey].files.push(fileName);
+  }
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(data));
+}
+
+// 캡처세션(captured) + 메타플레이어/폴더스캔으로 불러온 이미지(loadedMetaCards)를 합쳐 퀴즈 소스로 사용
+function getAllCards(){
+  const fromCaptured = captured.map(c => ({ ko: c.ko, en: c.en, url: c.url, fileName: c.fileName }));
+  const fromMeta = loadedMetaCards.map(c => ({ ko: c.meta.ko, en: c.meta.en, url: c.thumbUrl, fileName: c.fileName }));
+  return [...fromCaptured, ...fromMeta];
+}
+function getQuizCandidates(lang, minWords){
+  const learned = getLearnedSet();
+  return getAllCards().filter(c=>{
+    if(learned.has(c.fileName)) return false; // 학습완료 처리된 건 제외
+    const text = lang === 'ko' ? c.ko : c.en;
+    return text && text.trim().split(/\s+/).length >= minWords;
+  });
+}
+
+function shuffleArray(arr){
+  const a = [...arr];
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// 우측 그리드에서 선택했을 때 or 랜덤 뽑기 결과를 실제로 문제로 세팅하는 공용 함수
+function loadCardIntoQuiz(card, lang){
+  quizCurrentLang = lang;
+  quizCurrentFileName = card.fileName || '';
+  const text = (lang === 'ko' ? card.ko : card.en);
+  if(!text || !text.trim()){
+    quizFeedback.textContent = currentLang==='ko'
+      ? `이 이미지엔 ${lang==='ko'?'원문':'번역'} 텍스트가 없습니다.`
+      : `This image has no ${lang==='ko'?'original':'translated'} text.`;
+    quizFeedback.className = 'quiz-feedback wrong';
+    return;
+  }
+  quizCurrentText = text.trim();
+  quizHintText = (lang === 'ko' ? card.en : card.ko || '').trim();
+  quizWords = quizCurrentText.split(/\s+/);
+
+  if(card.url){
+    quizImg.src = card.url;
+    quizImg.style.display = 'block';
+  } else {
+    quizImg.style.display = 'none';
+  }
+
+  const langLabel = currentLang==='ko' ? (lang === 'ko' ? '원문' : '번역') : (lang === 'ko' ? 'Original' : 'Translation');
+  const hintLabel = currentLang==='ko' ? (lang === 'ko' ? '번역' : '원문') : (lang === 'ko' ? 'Translation' : 'Original');
+  if(card.url){
+    const questionLabel = currentLang==='ko' ? '문제' : 'Question';
+    const hintPrefix = currentLang==='ko' ? '힌트' : 'Hint';
+    const noHint = currentLang==='ko' ? '(번역 없음)' : '(no translation)';
+    quizHintOverlay.innerHTML = `
+      <div class="badge">${questionLabel}: ${langLabel}</div>
+      <div class="hint-text"><span class="label">${hintPrefix}(${hintLabel}):</span>${escapeHtml(quizHintText || noHint)}</div>
+    `;
+    quizHintOverlay.style.display = 'block';
+  } else {
+    quizHintOverlay.style.display = 'none';
+  }
+
+  setupQuizBoard();
+}
+
+function startNewQuiz(){
+  const lang = document.querySelector('input[name="quizLang"]:checked').value;
+  const minWords = parseInt(quizMinWordsEl.value) || 2;
+
+  const candidates = getQuizCandidates(lang, minWords);
+  if(candidates.length === 0){
+    quizFeedback.textContent = currentLang==='ko'
+      ? `조건에 맞는 문장이 없습니다 (최소 ${minWords}단어, ${lang==='ko'?'원문':'번역'}). 캡처를 더 하거나 최소 단어수를 낮춰보세요.`
+      : `No sentences match (min ${minWords} words, ${lang==='ko'?'original':'translated'}). Capture more, or lower the minimum word count.`;
+    quizFeedback.className = 'quiz-feedback wrong';
+    quizImg.style.display = 'none';
+    quizHintOverlay.style.display = 'none';
+    quizAnswerRow.innerHTML = '';
+    quizBank.innerHTML = '';
+    return;
+  }
+
+  const card = candidates[Math.floor(Math.random() * candidates.length)];
+  loadCardIntoQuiz(card, lang);
+}
+
+// ── 우측 "문제 선택" 그리드 ──
+function renderQuizPicker(){
+  const pickerList = document.getElementById('quizPickerList');
+  const cards = getAllCards().filter(c => c.url);
+  pickerList.innerHTML = '';
+  if(cards.length === 0){
+    pickerList.innerHTML = currentLang==='ko'
+      ? `<div style="font-size:0.75em;color:var(--text-dim);padding:8px;">아직 이미지가 없습니다.<br>왼쪽 위 "capture 폴더 불러오기"로 불러오세요.</div>`
+      : `<div style="font-size:0.75em;color:var(--text-dim);padding:8px;">No images yet.<br>Use "Load capture/ folder" above to load some.</div>`;
+    return;
+  }
+  cards.forEach(card=>{
+    const item = document.createElement('div');
+    item.className = 'quiz-pick-item';
+    const cap = card.ko || card.en || '(텍스트 없음)';
+    const isLearned = getLearnedSet().has(card.fileName);
+    item.innerHTML = `
+      <img src="${card.url}">
+      <div class="cap">${escapeHtml(cap)}</div>
+      ${isLearned ? `<div style="font-size:0.65em;color:var(--green);padding:2px 6px;">${t('learned_badge')}</div>` : ''}
+    `;
+    if(isLearned) item.style.opacity = '0.55';
+    item.addEventListener('click', ()=>{
+      const lang = document.querySelector('input[name="quizLang"]:checked').value;
+      document.querySelectorAll('.quiz-pick-item').forEach(el=>el.classList.remove('active'));
+      item.classList.add('active');
+      loadCardIntoQuiz(card, lang);
+    });
+    pickerList.appendChild(item);
+  });
+}
+
+function setupQuizBoard(){
+  quizFeedback.textContent = '';
+  quizFeedback.className = 'quiz-feedback';
+  quizSlots = new Array(quizWords.length).fill(null);
+  quizBankState = shuffleArray(quizWords.map((w, i) => ({ word: w, origIdx: i, placed: false })));
+
+  // 10단어 이상이면 첫/끝 단어를 좌우 힌트로 미리 채워둠 (문장의 시작/끝을 잡아주는 앵커 역할)
+  if(quizWords.length >= 10){
+    const firstItem = quizBankState.find(b => b.origIdx === 0);
+    const lastItem  = quizBankState.find(b => b.origIdx === quizWords.length - 1);
+    firstItem.placed = true;
+    firstItem.isHint = true;
+    lastItem.placed = true;
+    lastItem.isHint = true;
+    quizSlots[0] = firstItem;
+    quizSlots[quizWords.length - 1] = lastItem;
+  }
+
+  renderQuizBoard();
+}
+
+function buildSlotEl(val, i){
+  const slot = document.createElement('div');
+  const isHint = val && val.isHint;
+  slot.className = 'quiz-slot' + (val === null ? ' empty' : '') + (isHint ? ' hint-slot' : '');
+  slot.textContent = val === null ? '?' : val.word;
+  if(val !== null && !isHint){
+    slot.addEventListener('click', ()=>{
+      // 슬롯에서 빼서 다시 뱅크로
+      quizBankState.find(b => b === val).placed = false;
+      quizSlots[i] = null;
+      renderQuizBoard();
+    });
+  }
+  return slot;
+}
+
+function renderQuizBoard(){
+  // 정답 슬롯 — 10단어 넘으면 좌/우 두 줄로 나눠서 표시(한 줄에 다 욱여넣지 않음)
+  quizAnswerRow.innerHTML = '';
+  const n = quizSlots.length;
+  if(n > 10){
+    quizAnswerRow.classList.add('stacked');
+    const mid = Math.ceil(n / 2);
+    const row1 = document.createElement('div');
+    row1.className = 'quiz-slot-row';
+    const row2 = document.createElement('div');
+    row2.className = 'quiz-slot-row';
+    quizSlots.forEach((val, i)=>{
+      (i < mid ? row1 : row2).appendChild(buildSlotEl(val, i));
+    });
+    quizAnswerRow.appendChild(row1);
+    quizAnswerRow.appendChild(row2);
+  } else {
+    quizAnswerRow.classList.remove('stacked');
+    quizSlots.forEach((val, i)=>{
+      quizAnswerRow.appendChild(buildSlotEl(val, i));
+    });
+  }
+
+  // 단어뱅크 (배치 안 된 것만, 랜덤 회전으로 흐트러진 느낌)
+  quizBank.innerHTML = '';
+  quizBankState.filter(b => !b.placed).forEach(b=>{
+    const chip = document.createElement('div');
+    chip.className = 'quiz-chip';
+    chip.textContent = b.word;
+    const deg = (Math.random() * 24 - 12).toFixed(1);
+    chip.style.setProperty('--r', `${deg}deg`);
+    chip.style.transform = `rotate(${deg}deg)`;
+    chip.addEventListener('click', ()=>{
+      const emptyIdx = quizSlots.findIndex(s => s === null);
+      if(emptyIdx === -1) return;
+
+      // 클릭 즉시 정답 위치인지 판정 — 같은 단어가 여러 번 나올 수 있어 원래 위치(origIdx)로 비교
+      if(b.origIdx === emptyIdx){
+        quizSlots[emptyIdx] = b;
+        b.placed = true;
+        quizFeedback.textContent = '';
+        quizFeedback.className = 'quiz-feedback';
+        renderQuizBoard();
+        // 슬롯에 방금 채워진 칸에 pop 애니메이션
+        requestAnimationFrame(()=>{
+          const slots = quizAnswerRow.querySelectorAll('.quiz-slot');
+          if(slots[emptyIdx]){
+            slots[emptyIdx].classList.add('correct-pop');
+            setTimeout(()=>slots[emptyIdx].classList.remove('correct-pop'), 250);
+          }
+        });
+        // 전부 채웠으면 자동 정답 처리
+        if(quizSlots.every(s => s !== null)){
+          quizFeedback.textContent = '✅ 정답입니다!';
+          quizFeedback.className = 'quiz-feedback correct';
+        }
+      } else {
+        // 틀림 — 튕겨나오는 애니메이션, 뱅크에 그대로 남음(배치 안 됨)
+        quizFeedback.textContent = '❌ 아직 그 자리가 아니에요';
+        quizFeedback.className = 'quiz-feedback wrong';
+        chip.classList.add('wrong-shake');
+        setTimeout(()=>chip.classList.remove('wrong-shake'), 400);
+      }
+    });
+    quizBank.appendChild(chip);
+  });
+}
+
+document.getElementById('btnQuiz').addEventListener('click', ()=>{
+  quizModal.classList.add('show');
+  renderQuizPicker();
+  startNewQuiz();
+});
+document.getElementById('btnResetLearned').addEventListener('click', ()=>{
+  const ok = confirm(t('confirm_reset_learned'));
+  if(!ok) return;
+  localStorage.removeItem(LEARNED_KEY);
+  renderQuizPicker();
+  quizFeedback.textContent = '';
+});
+
+document.getElementById('btnQuizLoadFolder').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('quizFolderStatus');
+  if(!window.showDirectoryPicker){
+    statusEl.textContent = '⚠️ 이 브라우저는 폴더 읽기(File System Access API)를 지원하지 않습니다.';
+    return;
+  }
+  let startInHandle;
+  if(dirHandle){
+    try{ startInHandle = await dirHandle.getDirectoryHandle('capture'); }
+    catch{ startInHandle = dirHandle; }
+  }
+  let handle;
+  try{
+    const opts = { mode: 'read' };
+    if(startInHandle) opts.startIn = startInHandle;
+    handle = await window.showDirectoryPicker(opts);
+  } catch(err){
+    return; // 취소함
+  }
+
+  statusEl.textContent = '읽는 중...';
+  const cards = [];
+  for await (const [name, entry] of handle.entries()){
+    if(entry.kind !== 'file' || !/\.png$/i.test(name)) continue;
+    try{
+      const file = await entry.getFile();
+      const buf = new Uint8Array(await file.arrayBuffer());
+      const meta = readPngMetadata(buf);
+      if(!meta.ko && !meta.en) continue; // 우리 앱이 만든 캡처가 아니면 스킵
+      const thumbUrl = URL.createObjectURL(file);
+      cards.push({ thumbUrl, meta, fileName: name });
+    } catch(err){
+      console.error(`${name} 읽기 실패:`, err);
+    }
+  }
+
+  loadedMetaCards = cards;
+  statusEl.textContent = `✅ ${cards.length}개 이미지에서 메타데이터 로드됨 (퀴즈 문제로 사용됨)`;
+  renderQuizPicker();
+  startNewQuiz();
+});
+document.getElementById('btnQuizClose').addEventListener('click', ()=>{
+  quizModal.classList.remove('show');
+  speechSynthesis.cancel();
+});
+document.getElementById('btnQuizNew').addEventListener('click', startNewQuiz);
+document.getElementById('btnQuizReset').addEventListener('click', setupQuizBoard);
+
+document.getElementById('btnQuizCheck').addEventListener('click', ()=>{
+  if(quizSlots.some(s => s === null)){
+    quizFeedback.textContent = '아직 빈 칸이 있어요 — 단어를 다 채워주세요.';
+    quizFeedback.className = 'quiz-feedback wrong';
+    return;
+  }
+  const assembled = quizSlots.map(s => s.word).join(' ');
+  if(assembled === quizCurrentText){
+    quizFeedback.textContent = '✅ 정답입니다!';
+    quizFeedback.className = 'quiz-feedback correct';
+    logHistory('studied', quizCurrentFileName);
+  } else {
+    quizFeedback.textContent = '❌ 순서가 틀렸어요. 다시 시도해보세요.';
+    quizFeedback.className = 'quiz-feedback wrong';
+  }
+});
+
+document.getElementById('btnQuizShowAnswer').addEventListener('click', ()=>{
+  if(quizBankState.length === 0) return;
+  quizBankState.forEach((b, i)=>{
+    b.placed = true;
+    quizSlots[b.origIdx] = b;
+  });
+  renderQuizBoard();
+  quizFeedback.textContent = '👁 정답이 공개되었습니다.';
+  quizFeedback.className = 'quiz-feedback';
+  logHistory('studied', quizCurrentFileName);
+});
+
+document.getElementById('btnQuizMarkLearned').addEventListener('click', ()=>{
+  if(!quizCurrentFileName){
+    quizFeedback.textContent = '이 문제는 파일 식별자가 없어 학습완료 표시를 할 수 없습니다.';
+    quizFeedback.className = 'quiz-feedback wrong';
+    return;
+  }
+  markLearned(quizCurrentFileName);
+  logHistory('studied', quizCurrentFileName);
+  startNewQuiz(); // 학습완료 처리된 건 다음 뽑기부터 자동 제외됨
+});
+
+document.getElementById('btnQuizTts').addEventListener('click', ()=>{
+  if(!quizCurrentText) return;
+  speakQueue([{ text: quizCurrentText, lang: quizCurrentLang === 'ko' ? 'ko-KR' : secondaryTtsLang() }]);
+});
+
+// ════════════════════════════════════════════════════════════════
+// ── Firebase 신청 서비스 링크 (하드섭 추출 / ASR 추출 / 정밀번역) ──
+// TODO: 아래 URL을 실제 Firebase 프로젝트 주소로 교체하세요.
+// ════════════════════════════════════════════════════════════════
+const FIREBASE_BASE = 'https://wordsbean-hub.web.app'; // wordsbean-hub 프로젝트
+
+document.getElementById('linkHardsubExtract').href = `${FIREBASE_BASE}/request.html?type=hardsub`;
+document.getElementById('linkAsrExtract').href      = `${FIREBASE_BASE}/request.html?type=asr`;
+document.getElementById('linkPreciseTranslate').href = `${FIREBASE_BASE}/request.html?type=precise-translate`;
+
+// ════════════════════════════════════════════════════════════════
+// ── 구글 무료번역 (비공식 엔드포인트) + 번역 SRT 다운로드 ──────
+// ════════════════════════════════════════════════════════════════
+async function googleTranslateOne(text, target){
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=${encodeURIComponent(text)}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error(`번역 API 응답 오류 (${res.status})`);
+  const data = await res.json();
+  return data[0].map(seg => seg[0]).join('');
+}
+
+// 동시 요청 수를 제한해서 순차 처리 (한꺼번에 너무 많이 쏘면 차단될 수 있음)
+async function translateAllSubtitles(target, onProgress){
+  const CONCURRENCY = 4;
+  let done = 0;
+  const results = new Array(subtitles.length);
+
+  async function worker(startIdx){
+    for(let i = startIdx; i < subtitles.length; i += CONCURRENCY){
+      try{
+        results[i] = await googleTranslateOne(subtitles[i].text, target);
+      } catch(err){
+        console.error(`[번역실패] idx ${i}:`, err);
+        results[i] = '';
+      }
+      done++;
+      onProgress(done, subtitles.length);
+    }
+  }
+  await Promise.all(Array.from({length: CONCURRENCY}, (_, k) => worker(k)));
+  return results;
+}
+
+// ── 타겟언어 선택 시: 폴더 안에 해당 언어 SRT가 이미 있으면 자동으로 불러옴 (없으면 그냥 둠 — 자동생성 안 함) ──
+async function tryAutoLoadTranslationFile(target){
+  if(!dirHandle || subtitles.length === 0) return { ok: false, reason: 'no-folder' };
+
+  try{
+    // 세션이 길어지면 권한이 만료될 수 있어서, 스캔 전에 다시 확인/재요청
+    const perm = await dirHandle.queryPermission({ mode: 'readwrite' });
+    if(perm !== 'granted'){
+      const req = await dirHandle.requestPermission({ mode: 'readwrite' });
+      if(req !== 'granted') return { ok: false, reason: 'permission-denied' };
+    }
+
+    const pattern = new RegExp(`_${target.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\.srt$`, 'i');
+    let foundHandle = null;
+    for await (const [name, entry] of dirHandle.entries()){
+      if(entry.kind === 'file' && pattern.test(name)){ foundHandle = entry; break; }
+    }
+    if(!foundHandle) return { ok: false, reason: 'not-found' };
+
+    const text = await (await foundHandle.getFile()).text();
+    const langSubs = parseSrt(text);
+    subtitles = subtitles.map((s, i) => ({ ...s, en: langSubs[i] ? langSubs[i].text : s.en }));
+    secondaryLangCode = target;
+    renderResults();
+    return { ok: true, fileName: foundHandle.name };
+  } catch(err){
+    console.error('번역파일 자동로드 실패:', err);
+    return { ok: false, reason: 'error', error: err };
+  }
+}
+
+document.getElementById('targetLangSelect').addEventListener('change', async ()=>{
+  const target = document.getElementById('targetLangSelect').value;
+  const statusEl = document.getElementById('translateStatus');
+  statusEl.textContent = currentLang==='ko' ? '폴더에서 확인 중...' : 'Checking folder...';
+
+  const result = await tryAutoLoadTranslationFile(target);
+  if(result.ok){
+    statusEl.textContent = currentLang==='ko'
+      ? `✅ ${result.fileName} 불러왔습니다`
+      : `✅ Loaded ${result.fileName}`;
+  } else if(result.reason === 'not-found'){
+    statusEl.textContent = currentLang==='ko'
+      ? `해당 언어(${target}) 파일이 폴더에 없습니다 — "구글 무료번역 실행"을 눌러 생성하세요.`
+      : `No file for ${target} in this folder — click "Run free Google Translate" to create one.`;
+  } else if(result.reason === 'permission-denied'){
+    statusEl.textContent = currentLang==='ko' ? '⚠️ 폴더 접근 권한이 거부되었습니다.' : '⚠️ Folder access permission was denied.';
+  } else if(result.reason === 'no-folder'){
+    statusEl.textContent = '';
+  } else {
+    statusEl.textContent = currentLang==='ko' ? '⚠️ 폴더 확인 중 오류가 발생했습니다 (콘솔 확인).' : '⚠️ An error occurred while checking the folder (see console).';
+  }
+});
+
+document.getElementById('btnGoogleTranslate').addEventListener('click', async ()=>{
+  if(subtitles.length === 0){ alert('먼저 폴더를 열어 SRT를 불러오세요.'); return; }
+  const target = document.getElementById('targetLangSelect').value;
+  const statusEl = document.getElementById('translateStatus');
+  const btn = document.getElementById('btnGoogleTranslate');
+  btn.disabled = true;
+  statusEl.textContent = `번역 중... 0/${subtitles.length}`;
+
+  try{
+    const translated = await translateAllSubtitles(target, (done, total)=>{
+      statusEl.textContent = `번역 중... ${done}/${total}`;
+    });
+    subtitles = subtitles.map((s, i) => ({ ...s, en: translated[i] || s.en }));
+    secondaryLangCode = target;
+    statusEl.textContent = `✅ 번역 완료 (${target}) — 검색결과에도 반영됨`;
+    document.getElementById('btnDownloadTranslatedSrt').style.display = 'inline-block';
+    document.getElementById('btnDownloadTranslatedSrt').dataset.lang = target;
+    renderResults();
+  } catch(err){
+    console.error(err);
+    statusEl.textContent = '⚠️ 번역 실패 — 네트워크 또는 무료 API 제한일 수 있습니다. "정밀번역 요청"을 이용해보세요.';
+  }
+  btn.disabled = false;
+});
+
+function secToSrtTimestamp(sec){
+  const h = String(Math.floor(sec/3600)).padStart(2,'0');
+  const m = String(Math.floor((sec%3600)/60)).padStart(2,'0');
+  const s = String(Math.floor(sec%60)).padStart(2,'0');
+  const ms = String(Math.round((sec % 1) * 1000)).padStart(3,'0');
+  return `${h}:${m}:${s},${ms}`;
+}
+function buildSrtContent(subs, field){
+  return subs.map((s, i) =>
+    `${i+1}\n${secToSrtTimestamp(s.start)} --> ${secToSrtTimestamp(s.end)}\n${s[field] || ''}\n`
+  ).join('\n');
+}
+document.getElementById('btnDownloadTranslatedSrt').addEventListener('click', async ()=>{
+  const lang = document.getElementById('btnDownloadTranslatedSrt').dataset.lang || 'en';
+  const srtText = buildSrtContent(subtitles, 'en');
+  const fileName = `${getVideoTitle()}_${lang}.srt`;
+  const statusEl = document.getElementById('translateStatus');
+
+  if(dirHandle){
+    try{
+      const fh = await dirHandle.getFileHandle(fileName, { create: true });
+      const writable = await fh.createWritable();
+      await writable.write(srtText);
+      await writable.close();
+      statusEl.textContent = currentLang==='ko' ? `💾 ${fileName} 로 폴더에 저장됨` : `💾 Saved to folder as ${fileName}`;
+      return;
+    } catch(err){
+      console.error('폴더 저장 실패, 다운로드로 대체:', err);
+    }
+  }
+  // 폴백: 폴더 접근 불가하면 기존 방식대로 브라우저 다운로드
+  const blob = new Blob([srtText], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// ════════════════════════════════════════════════════════════════
+// ── 학습이력 캘린더 (진짜 연월일 달력 그리드, 최근 3개월) ──
+// ════════════════════════════════════════════════════════════════
+function levelFor(entry){
+  const total = (entry?.studied || 0) + (entry?.captured || 0);
+  if(total >= 8) return 3;
+  if(total >= 3) return 2;
+  if(total >= 1) return 1;
+  return 0;
+}
+
+function buildMonthCalendar(year, month, data, todayKey){ // month: 0-indexed
+  const wrap = document.createElement('div');
+  wrap.className = 'history-month';
+
+  const title = document.createElement('div');
+  title.className = 'history-month-title';
+  title.textContent = t('month_label')(year, month);
+  wrap.appendChild(title);
+
+  const weekdayRow = document.createElement('div');
+  weekdayRow.className = 'history-weekdays';
+  t('weekdays').forEach(w=>{
+    const s = document.createElement('span');
+    s.textContent = w;
+    weekdayRow.appendChild(s);
+  });
+  wrap.appendChild(weekdayRow);
+
+  const grid = document.createElement('div');
+  grid.className = 'history-days-grid';
+
+  const firstWeekday = new Date(year, month, 1).getDay(); // 0=일
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  for(let i = 0; i < firstWeekday; i++){
+    const blank = document.createElement('div');
+    blank.className = 'history-day-cell blank';
+    grid.appendChild(blank);
+  }
+
+  for(let day = 1; day <= daysInMonth; day++){
+    const dateObj = new Date(year, month, day);
+    const key = dateObj.toISOString().slice(0, 10);
+    const entry = data[key] || { studied: 0, captured: 0, files: [] };
+    const level = levelFor(entry);
+    const total = (entry.studied || 0) + (entry.captured || 0);
+
+    const cell = document.createElement('div');
+    cell.className = 'history-day-cell' + (key === todayKey ? ' today' : '') + (total > 0 ? ' has-activity' : '');
+    if(level > 0) cell.dataset.level = level;
+    cell.innerHTML = `<div>${day}</div>${total > 0 ? `<div class="day-count">(${total})</div>` : ''}`;
+    cell.title = currentLang==='ko'
+      ? `${key} — 학습 ${entry.studied}개, 캡처 ${entry.captured}개`
+      : `${key} — studied ${entry.studied}, captured ${entry.captured}`;
+    if(total > 0){
+      cell.addEventListener('click', ()=> openDayDrilldown(key, entry));
+    }
+    grid.appendChild(cell);
+  }
+
+  wrap.appendChild(grid);
+  return wrap;
+}
+
+// ── 특정 날짜 클릭 → 그날 캡처/학습한 파일들의 썸네일+자막 다시 보여주기 ──
+// (텍스트는 저장 안 해두므로, 현재 열려있는 폴더의 capture/ 에서 파일을 다시 읽어와 메타데이터 추출)
+async function openDayDrilldown(dateKey, entry){
+  const calEl = document.getElementById('historyCalendar');
+  calEl.innerHTML = '';
+
+  const backBtn = document.createElement('button');
+  backBtn.className = 'btn';
+  backBtn.style.marginBottom = '12px';
+  backBtn.style.background = 'var(--surface2)';
+  backBtn.style.color = 'var(--text)';
+  backBtn.style.border = '1px solid var(--border)';
+  backBtn.textContent = currentLang==='ko' ? '← 달력으로' : '← Back to calendar';
+  backBtn.addEventListener('click', renderHistoryCalendar);
+  calEl.appendChild(backBtn);
+
+  const title = document.createElement('div');
+  title.style.cssText = 'margin-bottom:10px;font-weight:700;color:var(--text);';
+  title.textContent = currentLang==='ko'
+    ? `${dateKey} — 학습 ${entry.studied || 0}개, 캡처 ${entry.captured || 0}개`
+    : `${dateKey} — studied ${entry.studied || 0}, captured ${entry.captured || 0}`;
+  calEl.appendChild(title);
+
+  const files = entry.files || [];
+  if(files.length === 0){
+    const msg = document.createElement('div');
+    msg.style.cssText = 'color:var(--text-dim);font-size:0.85em;';
+    msg.textContent = currentLang==='ko' ? '이 날짜에 연결된 이미지 파일이 없습니다.' : 'No linked image files for this date.';
+    calEl.appendChild(msg);
+    return;
+  }
+
+  if(!dirHandle){
+    const msg = document.createElement('div');
+    msg.style.cssText = 'color:var(--text-dim);font-size:0.85em;line-height:1.6;';
+    msg.innerHTML = (currentLang==='ko'
+      ? '폴더를 먼저 열어야(capture/ 폴더 접근) 썸네일을 볼 수 있습니다.<br>파일 목록: '
+      : 'Open the folder first (capture/ access) to view thumbnails.<br>Files: ') + escapeHtml(files.join(', '));
+    calEl.appendChild(msg);
+    return;
+  }
+
+  let captureDir;
+  try{ captureDir = await dirHandle.getDirectoryHandle('capture'); }
+  catch{
+    const msg = document.createElement('div');
+    msg.style.cssText = 'color:var(--text-dim);font-size:0.85em;';
+    msg.textContent = currentLang==='ko' ? 'capture/ 폴더를 찾을 수 없습니다.' : 'Could not find the capture/ folder.';
+    calEl.appendChild(msg);
+    return;
+  }
+
+  const listWrap = document.createElement('div');
+  listWrap.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
+  for(const fileName of files){
+    try{
+      const fh = await captureDir.getFileHandle(fileName);
+      const file = await fh.getFile();
+      const buf = new Uint8Array(await file.arrayBuffer());
+      const meta = readPngMetadata(buf);
+      const url = URL.createObjectURL(file);
+
+      const item = document.createElement('div');
+      item.style.cssText = 'display:flex;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px;align-items:center;';
+      const listenHint = currentLang==='ko' ? '🔊 클릭해서 듣기' : '🔊 Click to listen';
+      item.innerHTML = `
+        <img src="${url}" class="drilldown-thumb" title="${listenHint}" style="width:96px;height:54px;object-fit:cover;border-radius:5px;background:#111;flex-shrink:0;cursor:pointer;">
+        <div style="flex:1;min-width:0;font-size:0.82em;">
+          <div style="color:var(--text);font-weight:600;display:flex;align-items:center;gap:6px;">
+            <span>${escapeHtml(meta.ko || meta.Title || '')}</span>
+            ${meta.ko ? `<button class="btn drilldown-tts-ko" style="padding:2px 6px;font-size:0.85em;background:var(--primary);color:#fff;">🔊</button>` : ''}
+          </div>
+          <div style="color:var(--text-dim);display:flex;align-items:center;gap:6px;margin-top:2px;">
+            <span>${escapeHtml(meta.en || '')}</span>
+            ${meta.en ? `<button class="btn drilldown-tts-en" style="padding:2px 6px;font-size:0.85em;background:var(--green);color:#fff;">🔊</button>` : ''}
+          </div>
+        </div>
+      `;
+      // 썸네일 클릭 → 한글+번역언어 순서대로 이어서 재생 (다국어)
+      item.querySelector('.drilldown-thumb').addEventListener('click', ()=>{
+        speakQueue([
+          { text: meta.ko, lang: 'ko-KR' },
+          { text: meta.en, lang: secondaryTtsLang() }
+        ]);
+      });
+      const ttsKoBtn = item.querySelector('.drilldown-tts-ko');
+      if(ttsKoBtn) ttsKoBtn.addEventListener('click', ()=> speakQueue([{ text: meta.ko, lang: 'ko-KR' }]));
+      const ttsEnBtn = item.querySelector('.drilldown-tts-en');
+      if(ttsEnBtn) ttsEnBtn.addEventListener('click', ()=> speakQueue([{ text: meta.en, lang: secondaryTtsLang() }]));
+      listWrap.appendChild(item);
+    } catch(err){
+      console.error(`${fileName} 읽기 실패:`, err);
+    }
+  }
+  calEl.appendChild(listWrap);
+}
+
+function renderHistoryCalendar(){
+  const data = JSON.parse(localStorage.getItem(HISTORY_KEY) || '{}');
+
+  let totalStudied = 0, totalCaptured = 0;
+  Object.values(data).forEach(d => { totalStudied += (d.studied||0); totalCaptured += (d.captured||0); });
+
+  document.getElementById('historySummary').innerHTML = currentLang==='ko'
+    ? `<div>📸 총 캡처한 자막: <b style="color:var(--green)">${totalCaptured}</b>개</div>
+       <div>🧠 총 학습한 자막: <b style="color:var(--primary)">${totalStudied}</b>개</div>`
+    : `<div>📸 Total captured: <b style="color:var(--green)">${totalCaptured}</b></div>
+       <div>🧠 Total studied: <b style="color:var(--primary)">${totalStudied}</b></div>`;
+
+  const calEl = document.getElementById('historyCalendar');
+  calEl.innerHTML = '';
+  const today = new Date();
+  const todayKey = today.toISOString().slice(0, 10);
+
+  // 최근 3개월(이번달 포함) — 최신 달이 위로 오게
+  for(let offset = 0; offset < 3; offset++){
+    const d = new Date(today.getFullYear(), today.getMonth() - offset, 1);
+    calEl.appendChild(buildMonthCalendar(d.getFullYear(), d.getMonth(), data, todayKey));
+  }
+}
+
+document.getElementById('btnHistory').addEventListener('click', ()=>{
+  renderHistoryCalendar();
+  document.getElementById('historyModal').classList.add('show');
+});
+document.getElementById('btnHistoryClose').addEventListener('click', ()=>{
+  document.getElementById('historyModal').classList.remove('show');
+});
+document.getElementById('btnHistoryReset').addEventListener('click', ()=>{
+  const ok = confirm(t('confirm_reset_history'));
+  if(!ok) return;
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistoryCalendar();
+});
+
+// ════════════════════════════════════════════════════════════════
+// ── 앱 공유하기 (Web Share API, 미지원 브라우저는 링크 복사로 대체) ──
+// ════════════════════════════════════════════════════════════════
+document.getElementById('btnShareApp').addEventListener('click', async ()=>{
+  const shareData = {
+    title: '자막검색 + 캡처 학습앱',
+    text: '영상 자막에서 원하는 장면을 검색하고, 캡처해서 학습카드로 만들어보세요!',
+    url: location.href
+  };
+  if(navigator.share){
+    try{ await navigator.share(shareData); }
+    catch(err){ /* 사용자가 공유 취소함 — 무시 */ }
+  } else if(navigator.clipboard){
+    try{
+      await navigator.clipboard.writeText(shareData.url);
+      alert('링크가 클립보드에 복사되었습니다. 원하는 곳에 붙여넣기(Ctrl+V) 해서 공유하세요!');
+    } catch(err){
+      alert('클립보드 복사에 실패했습니다. 주소창의 URL을 직접 복사해주세요.');
+    }
+  } else {
+    alert('이 브라우저는 공유 기능을 지원하지 않습니다. 주소창의 URL을 직접 복사해주세요.');
+  }
+});
+
+// ── 시작 시 저장된 언어설정 적용 ──
+applyLang();
+
+// ── 서비스워커 등록 (오프라인 캐싱 + PWA 설치 조건 충족) ──
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./service-worker.js')
+      .catch(err=> console.error('서비스워커 등록 실패:', err));
+  });
+}
+</script>
+</body>
+</html>

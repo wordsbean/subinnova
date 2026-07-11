@@ -1,0 +1,20 @@
+{
+  "name": "Subinnova — Video Subtitle Translation Learning",
+  "short_name": "Subinnova",
+  "description": "Turn any video into your own personalized subtitle learning material. Free AI translation, scene capture, auto-generated PDF/HTML study guides, TTS playback, and quizzes.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f1117",
+  "theme_color": "#5b7fff",
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "categories": ["education", "productivity"],
+  "screenshots": []
+}
