@@ -1,4 +1,5 @@
 {
+  "id": "/subinnova/",
   "name": "Subinnova — Video Subtitle Translation Learning",
   "short_name": "Subinnova",
   "description": "Turn any video into your own personalized subtitle learning material. Free AI translation, scene capture, auto-generated PDF/HTML study guides, TTS playback, and quizzes.",
@@ -7,7 +8,7 @@
   "display": "standalone",
   "orientation": "any",
   "background_color": "#0f1117",
-  "theme_color": "#5b7fff",
+  "theme_color": "#0f8f7c",
   "lang": "en",
   "dir": "ltr",
   "icons": [
@@ -16,5 +17,13 @@
     { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "categories": ["education", "productivity"],
-  "screenshots": []
+  "screenshots": [
+    { "src": "screenshots/01.png", "sizes": "1459x883", "type": "image/png", "form_factor": "wide", "label": "Open a video and its SRT subtitles" },
+    { "src": "screenshots/03.png", "sizes": "1450x879", "type": "image/png", "form_factor": "wide", "label": "Bilingual subtitle list with free AI translation" },
+    { "src": "screenshots/06.png", "sizes": "1442x888", "type": "image/png", "form_factor": "wide", "label": "Meta Player — browse and replay captured scenes" },
+    { "src": "screenshots/07.png", "sizes": "951x767", "type": "image/png", "form_factor": "wide", "label": "Word Quiz — arrange the scrambled sentence" },
+    { "src": "screenshots/09.png", "sizes": "949x757", "type": "image/png", "form_factor": "wide", "label": "Exported HTML study page with audio playback" },
+    { "src": "screenshots/11.png", "sizes": "949x754", "type": "image/png", "form_factor": "wide", "label": "Learning history and study streak calendar" },
+    { "src": "screenshots/13.png", "sizes": "1820x888", "type": "image/png", "form_factor": "wide", "label": "Full workflow — capture, translate, and study" }
+  ]
 }
