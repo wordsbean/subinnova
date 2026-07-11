@@ -7,7 +7,7 @@
 <title>Subinnova — Video Subtitle Translation Learning | Turn Any Video Into Your Own Study Material</title>
 <meta name="description" content="Turn any video into your own personalized subtitle learning material. Free AI translation, scene capture, auto-generated PDF/HTML study guides, TTS playback, and quizzes. Learn Korean, English, Japanese and more from movies, K-Dramas, and YouTube.">
 <meta name="keywords" content="subtitle learning, AI subtitle, video translation, language learning, learn Korean, learn English, learn Japanese, K-Drama learning, movie learning, subtitle player, subtitle capture, SRT player, AI translation, TTS, subinnova">
-<meta name="theme-color" content="#5b7fff">
+<meta name="theme-color" content="#0f8f7c">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -904,6 +904,31 @@ async function loadFolderFromFileList(files){
 document.getElementById('folderInputFallback').addEventListener('change', async (e)=>{
   await loadFolderFromFileList(Array.from(e.target.files));
 });
+
+// ── 첫 방문 시 기본 데모(movie/ 폴더) 자동 로드 ──
+// 사용자가 폴더를 직접 열기 전, 빈 화면 대신 tos_clip 데모가 바로 재생 가능하도록 함.
+// fetch로 받아온 걸 그대로 File 객체로 감싸서 기존 폴백 로직(loadFolderFromFileList)에 태움.
+async function loadDemoFromMovieFolder(){
+  try{
+    const [videoResp, srtResp, koSrtResp] = await Promise.all([
+      fetch('./movie/tos_clip.mp4'),
+      fetch('./movie/tos_clip.srt'),
+      fetch('./movie/tos_clip_ko.srt')
+    ]);
+    if(!videoResp.ok || !srtResp.ok || !koSrtResp.ok) return false;
+    const [videoBlob, srtBlob, koSrtBlob] = await Promise.all([
+      videoResp.blob(), srtResp.blob(), koSrtResp.blob()
+    ]);
+    const videoFile = new File([videoBlob], 'tos_clip.mp4', { type: 'video/mp4' });
+    const srtFile = new File([srtBlob], 'tos_clip.srt', { type: 'text/plain' });
+    const koSrtFile = new File([koSrtBlob], 'tos_clip_ko.srt', { type: 'text/plain' });
+    await loadFolderFromFileList([videoFile, srtFile, koSrtFile]);
+    return true;
+  }catch(err){
+    console.error('데모 자동 로드 실패:', err);
+    return false;
+  }
+}
 
 document.getElementById('btnPickFolder').addEventListener('click', async ()=>{
   if(!window.showDirectoryPicker){
@@ -2933,6 +2958,13 @@ document.getElementById('btnShareApp').addEventListener('click', async ()=>{
 
 // ── 시작 시 저장된 언어설정 적용 ──
 applyLang();
+
+// ── 시작 시 아무 영상도 로드 안 된 상태면 movie/ 데모를 자동으로 불러옴 ──
+// (돌아온 사용자는 위의 "다시 열기" 버튼으로 자기 폴더로 즉시 전환 가능)
+(async function initDemoAutoload(){
+  if(subtitles.length > 0) return; // 혹시 다른 경로로 이미 뭔가 로드돼 있으면 건드리지 않음
+  await loadDemoFromMovieFolder();
+})();
 
 // ── 서비스워커 등록 (오프라인 캐싱 + PWA 설치 조건 충족) ──
 if('serviceWorker' in navigator){
